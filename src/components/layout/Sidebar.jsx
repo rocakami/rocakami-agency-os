@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Menu, X, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2daa28ea6_ROCAKAMILOGO-09.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/91df564ad_ROKAKAMI_268-01.png";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -49,13 +49,10 @@ export default function Sidebar() {
   const sidebarContent = (
     <div className={`flex flex-col h-full bg-[#1a3676] ${collapsed ? "w-[72px]" : "w-[260px]"} transition-all duration-300`}>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
-        <img src={LOGO_URL} alt="RocaKami" className="w-9 h-9 rounded-lg object-contain bg-white p-0.5" />
+      <div className="flex flex-col items-center gap-2 px-4 py-5 border-b border-white/10">
+        <img src={LOGO_URL} alt="Agency OS" className="w-14 h-14 rounded-lg object-contain bg-black p-1" />
         {!collapsed && (
-          <div className="flex flex-col">
-            <span className="text-white font-bold text-sm tracking-wide">ROCAKAMI</span>
-            <span className="text-sky-300 text-[10px] font-medium tracking-widest uppercase">Agency OS</span>
-          </div>
+          <span className="text-sky-300 text-[10px] font-medium tracking-widest uppercase">Agency OS</span>
         )}
       </div>
 
