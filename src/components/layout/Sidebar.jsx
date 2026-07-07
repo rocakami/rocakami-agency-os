@@ -136,25 +136,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Profile link (all users) */}
-      <div className="px-2 pb-1 pt-2 border-t border-white/10">
-        <Link
-          to="/profile"
-          onClick={() => setMobileOpen(false)}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-            ${isActive("/profile")
-              ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
-              : "text-white/70 hover:text-white hover:bg-white/10"
-            }
-            ${collapsed ? "justify-center" : ""}
-          `}
-        >
-          <UserCircle className="w-[18px] h-[18px] shrink-0" />
-          {!collapsed && <span>My Account</span>}
-        </Link>
-      </div>
-
-      {/* Admin link (admins only) */}
+      {/* ROCAKAMI links (admins only) */}
       {user?.role === "admin" && (
         <div className="px-2 pb-1 pt-2 border-t border-white/10">
           {!collapsed && (
@@ -195,6 +177,30 @@ export default function Sidebar() {
               </a>
             </>
           )}
+        </div>
+      )}
+
+      {/* Profile link (all users) */}
+      <div className="px-2 pb-1 pt-2 border-t border-white/10">
+        <Link
+          to="/profile"
+          onClick={() => setMobileOpen(false)}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+            ${isActive("/profile")
+              ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
+              : "text-white/70 hover:text-white hover:bg-white/10"
+            }
+            ${collapsed ? "justify-center" : ""}
+          `}
+        >
+          <UserCircle className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span>My Account</span>}
+        </Link>
+      </div>
+
+      {/* Admin Panel link (admins only) */}
+      {user?.role === "admin" && (
+        <div className="px-2 pb-1 pt-2 border-t border-white/10">
           <Link
             to="/admin"
             onClick={() => setMobileOpen(false)}
