@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -21,7 +22,7 @@ export default function ContractorDetail() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminForm, setAdminForm] = useState({ employee_id: "", folder_url: "", start_date: "" });
+  const [adminForm, setAdminForm] = useState({ rate: "", folder_url: "", performance_notes: "" });
   const [savingAdmin, setSavingAdmin] = useState(false);
 
   useEffect(() => {
@@ -31,12 +32,13 @@ export default function ContractorDetail() {
           base44.auth.me(),
           base44.entities.Contractor.get(id)
         ]);
-        setIsAdmin(me.role === "admin");
+        const isAdminOrManager = me.role === "admin" || me.role === "manager";
+        setIsAdmin(isAdminOrManager);
         setContractor(c);
         setAdminForm({
-          employee_id: c.employee_id || "",
+          rate: c.rate || "",
           folder_url: c.folder_url || "",
-          start_date: c.start_date || ""
+          performance_notes: c.performance_notes || ""
         });
         const allProjects = await base44.entities.ClientProject.list();
         const matched = allProjects.filter((p) =>
@@ -53,7 +55,7 @@ export default function ContractorDetail() {
     try {
       const updated = await base44.entities.Contractor.update(contractor.id, adminForm);
       setContractor(updated);
-      toast({ title: "Admin fields saved" });
+      toast({ title: "Admin settings saved" });
     } catch (e) {
       toast({ title: "Error saving", variant: "destructive" });
     }
@@ -73,11 +75,9 @@ export default function ContractorDetail() {
     { icon: Phone, label: "Phone", value: contractor.phone },
     { icon: MapPin, label: "Address", value: contractor.address },
     { icon: AlertTriangle, label: "Emergency Contact", value: contractor.emergency_contact },
-    { icon: DollarSign, label: "Rate", value: contractor.rate },
     { icon: Users, label: "Assigned Clients", value: contractor.assigned_clients },
     { icon: Calendar, label: "Start Date", value: contractor.start_date ? new Date(contractor.start_date).toLocaleDateString() : null },
-    { icon: Badge, label: "Employee ID", value: contractor.employee_id },
-    { icon: LinkIcon, label: "Personal Folder", value: contractor.folder_url, isLink: true }
+    { icon: Badge, label: "Employee ID", value: contractor.employee_id }
   ].filter((d) => d.value);
 
   return (
@@ -167,15 +167,6 @@ export default function ContractorDetail() {
               </div>
             )}
 
-            {contractor.performance_notes && (
-              <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="w-4 h-4 text-muted-foreground" />
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Notes</h4>
-                </div>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{contractor.performance_notes}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
@@ -188,19 +179,19 @@ export default function ContractorDetail() {
               <Shield className="w-4 h-4 text-primary" />
               <h3 className="font-semibold text-sm text-primary uppercase tracking-wide">Admin Settings</h3>
             </div>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Employee ID Number</label>
-                <Input value={adminForm.employee_id} readOnly disabled className="bg-muted text-muted-foreground" placeholder="Auto-generated on creation" />
+                <label className="text-xs font-medium text-muted-foreground">Staff Rate</label>
+                <Input value={adminForm.rate} onChange={(e) => setAdminForm({ ...adminForm, rate: e.target.value })} placeholder="e.g. $50/hr" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Personal Folder Link</label>
+                <label className="text-xs font-medium text-muted-foreground">Personal Folder</label>
                 <Input value={adminForm.folder_url} onChange={(e) => setAdminForm({ ...adminForm, folder_url: e.target.value })} placeholder="https://drive.google.com/…" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Start Date</label>
-                <Input type="date" value={adminForm.start_date} onChange={(e) => setAdminForm({ ...adminForm, start_date: e.target.value })} />
-              </div>
+            </div>
+            <div className="space-y-1 mt-4">
+              <label className="text-xs font-medium text-muted-foreground">Notes</label>
+              <Textarea value={adminForm.performance_notes} onChange={(e) => setAdminForm({ ...adminForm, performance_notes: e.target.value })} rows={4} placeholder="Write notes about this staff member…" />
             </div>
             <Button onClick={saveAdmin} disabled={savingAdmin} className="gap-2 mt-4">
               {savingAdmin ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
