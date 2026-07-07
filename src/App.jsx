@@ -23,6 +23,8 @@ import ClientDelivery from '@/pages/ClientDelivery';
 import ClientDirectory from '@/pages/ClientDirectory';
 import ClientDetail from '@/pages/ClientDetail';
 import Contractors from '@/pages/Contractors';
+import ContractorDetail from '@/pages/ContractorDetail';
+import Profile from '@/pages/Profile';
 import ToolsDirectory from '@/pages/ToolsDirectory';
 import TrainingCenter from '@/pages/TrainingCenter';
 import Announcements from '@/pages/Announcements';
@@ -69,6 +71,8 @@ const AuthenticatedApp = () => {
           <Route path="/clients" element={<ClientDirectory />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
           <Route path="/contractors" element={<Contractors />} />
+          <Route path="/contractors/:id" element={<ContractorDetail />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/tools" element={<ToolsDirectory />} />
           <Route path="/training" element={<TrainingCenter />} />
           <Route path="/announcements" element={<Announcements />} />

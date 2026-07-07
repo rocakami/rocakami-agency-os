@@ -115,7 +115,10 @@ export default function AdminOnboarding() {
               </div>
             </div>
             <Textarea placeholder="Content (paragraph text)" rows={3} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
-            <Textarea placeholder="Items (one per line, for checklist/bulleted sections)" rows={4} value={form.items} onChange={(e) => setForm({ ...form, items: e.target.value })} />
+            <div className="space-y-1">
+              <Textarea placeholder="Items (one per line, for checklist/bulleted sections)" rows={4} value={form.items} onChange={(e) => setForm({ ...form, items: e.target.value })} />
+              <p className="text-xs text-muted-foreground">Tip: To add a document link, use the format: Item text | https://link.com</p>
+            </div>
             <Input type="number" placeholder="Order" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })} />
             <Button onClick={save} className="w-full">{editing ? "Update" : "Add"}</Button>
           </div>

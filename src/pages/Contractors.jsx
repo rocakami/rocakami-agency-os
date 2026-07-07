@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, UserCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -55,10 +56,12 @@ export default function Contractors() {
                 {filtered.map((c) => (
                   <TableRow key={c.id} className="hover:bg-muted/30">
                     <TableCell>
-                      <div>
-                        <p className="font-medium text-sm">{c.name}</p>
-                        {c.email && <p className="text-[11px] text-muted-foreground">{c.email}</p>}
-                      </div>
+                      <Link to={`/contractors/${c.id}`}>
+                        <div className="hover:text-sky-600 transition-colors cursor-pointer">
+                          <p className="font-medium text-sm">{c.name}</p>
+                          {c.email && <p className="text-[11px] text-muted-foreground">{c.email}</p>}
+                        </div>
+                      </Link>
                     </TableCell>
                     <TableCell className="text-sm">{c.role}</TableCell>
                     <TableCell className="text-sm font-medium">{c.rate || "—"}</TableCell>

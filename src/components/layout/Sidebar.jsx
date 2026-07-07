@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Menu, X, Shield, Globe, Briefcase } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, X, Shield, Globe, Briefcase, UserCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 import { getNavIcon as getIcon } from "@/lib/nav-icons";
@@ -135,6 +135,24 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Profile link (all users) */}
+      <div className="px-2 pb-1 pt-2 border-t border-white/10">
+        <Link
+          to="/profile"
+          onClick={() => setMobileOpen(false)}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+            ${isActive("/profile")
+              ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
+              : "text-white/70 hover:text-white hover:bg-white/10"
+            }
+            ${collapsed ? "justify-center" : ""}
+          `}
+        >
+          <UserCircle className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span>My Account</span>}
+        </Link>
+      </div>
 
       {/* Admin link (admins only) */}
       {user?.role === "admin" && (

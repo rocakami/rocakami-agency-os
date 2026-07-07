@@ -11,6 +11,15 @@
     "email": {
       "type": "string"
     },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "emergency_contact": {
+      "type": "string"
+    },
     "rate": {
       "type": "string"
     },
