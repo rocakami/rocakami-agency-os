@@ -68,8 +68,11 @@ export default function Sidebar() {
   const sidebarContent = (
     <div className={`flex flex-col h-full bg-[#1a3676] ${collapsed ? "w-[72px]" : "w-[260px]"} transition-all duration-300`}>
       {/* Logo */}
-      <div className="px-4 py-5 border-b border-white/10">
-        <img src={LOGO_URL} alt="RocaKami — Architects of Digital Flow" className={`object-contain rounded-2xl ${collapsed ? "w-10 h-10 mx-auto" : "w-full h-auto"}`} />
+      <div className="px-4 py-5 border-b border-white/10 flex flex-col items-center gap-1.5">
+        <img src={LOGO_URL} alt="RocaKami — Architects of Digital Flow" className={`object-contain rounded-2xl ${collapsed ? "w-10 h-10" : "w-full h-auto"}`} />
+        {!collapsed && (
+          <span className="text-sky-300 text-[10px] font-semibold tracking-[0.25em] uppercase">Agency OS</span>
+        )}
       </div>
 
       {/* Nav */}
