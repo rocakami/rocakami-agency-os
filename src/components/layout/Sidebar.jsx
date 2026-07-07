@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Menu, X, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 
-const LOGO_URL = "https://media.base44.com/images/public/user_69df64cf7abf40c43ccdfbbf/e818e8d37_ROCAKAMILOGO.jpg";
+const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2daa28ea6_ROCAKAMILOGO-09.png";
 
 export default function Sidebar() {
   const location = useLocation();
