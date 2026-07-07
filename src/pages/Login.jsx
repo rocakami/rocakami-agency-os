@@ -49,16 +49,11 @@ export default function Login() {
             <span className="text-xs font-medium text-white/90">One app. Everything connected.</span>
           </div>
           <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-5 font-heading">
-            Everything your team needs — one click away.
+            Your agency. One workspace. Total clarity.
           </h1>
           <p className="text-lg text-white/80 leading-relaxed font-body mb-6">
-            Manage projects, clients, SOPs, documents, and team operations from a single, unified portal. No more scattered tools or lost context — just one powerful workspace built for how Rocakami delivers.
+            Access every project, client, contract, SOP, document, and team update — all in one place. No more hunting across tools or chasing information. This is where Rocakami's staff get things done, together.
           </p>
-          <div className="flex items-center gap-2 text-sm text-white/70 font-body">
-            <a href="https://www.rocakami.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
-              www.rocakami.com
-            </a>
-          </div>
         </div>
         <p className="text-sm text-white/60">© {new Date().getFullYear()} Rocakami — Architects of Digital Flow</p>
       </div>
