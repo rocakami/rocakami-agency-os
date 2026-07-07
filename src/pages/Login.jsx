@@ -37,7 +37,11 @@ export default function Login() {
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-gradient-to-b from-[#1e5a99] to-[#0f3966] text-white relative overflow-hidden">
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold tracking-tight font-heading">ROCAKAMI</span>
+          <img
+            src="https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2de38b6f3_ROKAKAMI_720-04.png"
+            alt="Rocakami"
+            className="w-40 h-auto mix-blend-screen"
+          />
         </div>
         <div className="max-w-md">
           <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4 font-heading">
@@ -55,7 +59,13 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <span className="text-2xl font-bold tracking-tight text-[#0f3966] font-heading">ROCAKAMI</span>
+            <div className="inline-block rounded-xl bg-[#0f3966] px-6 py-4">
+              <img
+                src="https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2de38b6f3_ROKAKAMI_720-04.png"
+                alt="Rocakami"
+                className="w-32 h-auto mx-auto mix-blend-screen"
+              />
+            </div>
           </div>
 
           {/* Login Box */}
