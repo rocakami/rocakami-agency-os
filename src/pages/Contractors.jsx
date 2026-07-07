@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, UserCheck, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Search, UserCheck, Pencil, Trash2, Loader2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,13 +29,34 @@ export default function Contractors() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [clients, setClients] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Contractor.list("-created_date").then(setContractors).finally(() => setLoading(false));
 
+  const parseClients = (val) => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return String(val).split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  };
+
+  const toggleClient = (clientName) => {
+    const current = parseClients(form.assigned_clients);
+    const next = current.includes(clientName)
+      ? current.filter((n) => n !== clientName)
+      : [...current, clientName];
+    setForm({ ...form, assigned_clients: next.join(", ") });
+  };
+
   useEffect(() => {
     load();
     base44.auth.me().then((me) => setIsAdmin(me.role === "admin")).catch(() => {});
+    base44.entities.Client.list().then(setClients).catch(() => {});
   }, []);
 
   const filtered = contractors.filter((c) =>
@@ -113,9 +134,9 @@ export default function Contractors() {
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Role</TableHead>
                   <TableHead className="font-semibold">Supervisor</TableHead>
-                  <TableHead className="font-semibold">Rate</TableHead>
                   <TableHead className="font-semibold">Employment</TableHead>
                   <TableHead className="font-semibold">Contract</TableHead>
+                  <TableHead className="font-semibold">Folder</TableHead>
                   {isAdmin && <TableHead className="font-semibold text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -132,9 +153,14 @@ export default function Contractors() {
                     </TableCell>
                     <TableCell className="text-sm">{c.role}</TableCell>
                     <TableCell className="text-sm">{c.supervisor || "—"}</TableCell>
-                    <TableCell className="text-sm font-medium">{c.rate || "—"}</TableCell>
                     <TableCell className="text-sm">{c.employment_status || "—"}</TableCell>
                     <TableCell><StatusBadge status={c.contract_status} /></TableCell>
+                    <TableCell className="text-sm">
+                      {c.folder_url
+                        ? <a href={c.folder_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-sky-600 hover:underline inline-flex items-center gap-1">Open <ExternalLink className="w-3 h-3" /></a>
+                        : <span className="text-muted-foreground">—</span>
+                      }
+                    </TableCell>
                     {isAdmin && (
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
@@ -168,9 +194,39 @@ export default function Contractors() {
               <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
             <Input placeholder="Immediate Supervisor" value={form.supervisor} onChange={(e) => setForm({ ...form, supervisor: e.target.value })} />
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Rate (e.g. $50/hr)" value={form.rate} onChange={(e) => setForm({ ...form, rate: e.target.value })} />
-              <Input placeholder="Assigned clients" value={form.assigned_clients} onChange={(e) => setForm({ ...form, assigned_clients: e.target.value })} />
+            <Input placeholder="Rate (e.g. $50/hr)" value={form.rate} onChange={(e) => setForm({ ...form, rate: e.target.value })} />
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Assigned Clients</label>
+              <Select value="__placeholder__" onValueChange={toggleClient}>
+                <SelectTrigger>
+                  <SelectValue placeholder={parseClients(form.assigned_clients).length > 0 ? `${parseClients(form.assigned_clients).length} selected` : "Select clients"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.length === 0
+                    ? <SelectItem value="__none" disabled>No clients available</SelectItem>
+                    : clients.map((cl) => (
+                      <SelectItem key={cl.id} value={cl.name}>
+                        <span className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded border flex items-center justify-center ${parseClients(form.assigned_clients).includes(cl.name) ? "bg-primary border-primary" : "border-input"}`}>
+                            {parseClients(form.assigned_clients).includes(cl.name) && <span className="text-white text-[8px]">✓</span>}
+                          </span>
+                          {cl.name}
+                        </span>
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+              {parseClients(form.assigned_clients).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {parseClients(form.assigned_clients).map((name) => (
+                    <span key={name} className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+                      {name}
+                      <button type="button" onClick={() => toggleClient(name)} className="text-muted-foreground hover:text-destructive">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Select value={form.contract_status} onValueChange={(v) => setForm({ ...form, contract_status: v })}>
