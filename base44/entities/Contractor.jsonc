@@ -26,23 +26,24 @@
     "assigned_clients": {
       "type": "string"
     },
-    "payment_status": {
-      "type": "string",
-      "enum": [
-        "Paid",
-        "Pending",
-        "Overdue"
-      ],
-      "default": "Pending"
-    },
     "contract_status": {
       "type": "string",
       "enum": [
         "Active",
-        "Expired",
-        "On Hold"
+        "On Hold",
+        "Completed",
+        "Cancelled"
       ],
       "default": "Active"
+    },
+    "employment_status": {
+      "type": "string",
+      "enum": [
+        "Full Time",
+        "Part Time",
+        "Project Based"
+      ],
+      "default": "Full Time"
     },
     "performance_notes": {
       "type": "string"

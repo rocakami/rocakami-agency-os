@@ -15,14 +15,14 @@ export default function AdminContractors() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", role: "", email: "", rate: "", assigned_clients: "", payment_status: "Pending", contract_status: "Active", performance_notes: "", start_date: "", employee_id: "", folder_url: "" });
+  const [form, setForm] = useState({ name: "", role: "", email: "", rate: "", assigned_clients: "", contract_status: "Active", employment_status: "Full Time", performance_notes: "", start_date: "", employee_id: "", folder_url: "" });
   const { toast } = useToast();
 
   const load = () => base44.entities.Contractor.list("-created_date").then(setItems).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm({ name: "", role: "", email: "", rate: "", assigned_clients: "", payment_status: "Pending", contract_status: "Active", performance_notes: "", start_date: "", employee_id: "", folder_url: "" }); setDialogOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, role: c.role, email: c.email || "", rate: c.rate || "", assigned_clients: c.assigned_clients || "", payment_status: c.payment_status || "Pending", contract_status: c.contract_status || "Active", performance_notes: c.performance_notes || "", start_date: c.start_date || "", employee_id: c.employee_id || "", folder_url: c.folder_url || "" }); setDialogOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ name: "", role: "", email: "", rate: "", assigned_clients: "", contract_status: "Active", employment_status: "Full Time", performance_notes: "", start_date: "", employee_id: "", folder_url: "" }); setDialogOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, role: c.role, email: c.email || "", rate: c.rate || "", assigned_clients: c.assigned_clients || "", contract_status: c.contract_status || "Active", employment_status: c.employment_status || "Full Time", performance_notes: c.performance_notes || "", start_date: c.start_date || "", employee_id: c.employee_id || "", folder_url: c.folder_url || "" }); setDialogOpen(true); };
 
   const save = async () => {
     if (!form.name || !form.role) return;
@@ -42,14 +42,14 @@ export default function AdminContractors() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Rate</TableHead><TableHead>Payment</TableHead><TableHead>Contract</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Rate</TableHead><TableHead>Employment</TableHead><TableHead>Contract</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium text-sm">{c.name}</TableCell>
                 <TableCell className="text-sm">{c.role}</TableCell>
                 <TableCell className="text-sm">{c.rate || "—"}</TableCell>
-                <TableCell><StatusBadge status={c.payment_status} /></TableCell>
+                <TableCell className="text-sm">{c.employment_status || "—"}</TableCell>
                 <TableCell><StatusBadge status={c.contract_status} /></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
@@ -77,13 +77,13 @@ export default function AdminContractors() {
             </div>
             <Input placeholder="Assigned clients" value={form.assigned_clients} onChange={(e) => setForm({ ...form, assigned_clients: e.target.value })} />
             <div className="grid grid-cols-2 gap-3">
-              <Select value={form.payment_status} onValueChange={(v) => setForm({ ...form, payment_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{["Paid", "Pending", "Overdue"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
               <Select value={form.contract_status} onValueChange={(v) => setForm({ ...form, contract_status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{["Active", "Expired", "On Hold"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{["Active", "On Hold", "Completed", "Cancelled"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={form.employment_status} onValueChange={(v) => setForm({ ...form, employment_status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{["Full Time", "Part Time", "Project Based"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <Input type="date" placeholder="Start date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />

@@ -16,7 +16,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 const EMPTY = {
   name: "", role: "", email: "", phone: "", rate: "", assigned_clients: "",
-  payment_status: "Pending", contract_status: "Active", performance_notes: "",
+  contract_status: "Active", employment_status: "Full Time", performance_notes: "",
   start_date: "", employee_id: "", folder_url: "", supervisor: ""
 };
 
@@ -47,7 +47,7 @@ export default function Contractors() {
     setForm({
       name: c.name || "", role: c.role || "", email: c.email || "", phone: c.phone || "",
       rate: c.rate || "", assigned_clients: c.assigned_clients || "",
-      payment_status: c.payment_status || "Pending", contract_status: c.contract_status || "Active",
+      contract_status: c.contract_status || "Active", employment_status: c.employment_status || "Full Time",
       performance_notes: c.performance_notes || "", start_date: c.start_date || "",
       employee_id: c.employee_id || "", folder_url: c.folder_url || "", supervisor: c.supervisor || ""
     });
@@ -114,7 +114,7 @@ export default function Contractors() {
                   <TableHead className="font-semibold">Role</TableHead>
                   <TableHead className="font-semibold">Supervisor</TableHead>
                   <TableHead className="font-semibold">Rate</TableHead>
-                  <TableHead className="font-semibold">Payment</TableHead>
+                  <TableHead className="font-semibold">Employment</TableHead>
                   <TableHead className="font-semibold">Contract</TableHead>
                   {isAdmin && <TableHead className="font-semibold text-right">Actions</TableHead>}
                 </TableRow>
@@ -133,7 +133,7 @@ export default function Contractors() {
                     <TableCell className="text-sm">{c.role}</TableCell>
                     <TableCell className="text-sm">{c.supervisor || "—"}</TableCell>
                     <TableCell className="text-sm font-medium">{c.rate || "—"}</TableCell>
-                    <TableCell><StatusBadge status={c.payment_status} /></TableCell>
+                    <TableCell className="text-sm">{c.employment_status || "—"}</TableCell>
                     <TableCell><StatusBadge status={c.contract_status} /></TableCell>
                     {isAdmin && (
                       <TableCell className="text-right">
@@ -173,13 +173,13 @@ export default function Contractors() {
               <Input placeholder="Assigned clients" value={form.assigned_clients} onChange={(e) => setForm({ ...form, assigned_clients: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Select value={form.payment_status} onValueChange={(v) => setForm({ ...form, payment_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{["Paid", "Pending", "Overdue"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
               <Select value={form.contract_status} onValueChange={(v) => setForm({ ...form, contract_status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{["Active", "Expired", "On Hold"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{["Active", "On Hold", "Completed", "Cancelled"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={form.employment_status} onValueChange={(v) => setForm({ ...form, employment_status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{["Full Time", "Part Time", "Project Based"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">

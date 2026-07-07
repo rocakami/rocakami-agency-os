@@ -116,12 +116,12 @@ export default function ContractorDetail() {
 
             <div className="mt-4 pt-4 border-t space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Payment:</span>
-                <StatusBadge status={contractor.payment_status} />
-              </div>
-              <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Contract:</span>
                 <StatusBadge status={contractor.contract_status} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Employment:</span>
+                <span className="text-sm font-medium">{contractor.employment_status || "—"}</span>
               </div>
             </div>
           </CardContent>

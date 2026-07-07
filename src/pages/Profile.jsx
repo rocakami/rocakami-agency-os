@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PageHeader from "@/components/shared/PageHeader";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, User, Save, Badge, Link as LinkIcon, Calendar, ExternalLink } from "lucide-react";
+import { Loader2, User, Save, Badge, Link as LinkIcon, Calendar, ExternalLink, Briefcase, FileCheck } from "lucide-react";
 
 const EMPTY = {
   name: "", role: "", email: "", phone: "", address: "",
@@ -70,7 +70,9 @@ export default function Profile() {
   const adminFields = [
     { icon: Badge, label: "Employee ID", value: contractor?.employee_id },
     { icon: LinkIcon, label: "Personal Folder", value: contractor?.folder_url, isLink: true },
-    { icon: Calendar, label: "Start Date", value: contractor?.start_date ? new Date(contractor.start_date).toLocaleDateString() : null }
+    { icon: Calendar, label: "Start Date", value: contractor?.start_date ? new Date(contractor.start_date).toLocaleDateString() : null },
+    { icon: Briefcase, label: "Employment Status", value: contractor?.employment_status },
+    { icon: FileCheck, label: "Contract Status", value: contractor?.contract_status }
   ].filter((d) => d.value);
 
   return (
