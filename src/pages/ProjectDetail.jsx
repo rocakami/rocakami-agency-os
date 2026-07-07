@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import ProjectFormDialog from "@/components/client-delivery/ProjectFormDialog";
+import ProjectTasks from "@/components/client-delivery/ProjectTasks";
 
 const STAGES = ["Intake", "Discovery", "Proposal", "Onboarding", "Active", "Closure"];
 
@@ -24,6 +25,7 @@ export default function ProjectDetail() {
   const [isManager, setIsManager] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [clients, setClients] = useState([]);
+  const [contractors, setContractors] = useState([]);
 
   const load = () => base44.entities.ClientProject.get(id).then(setProject).finally(() => setLoading(false));
 
@@ -40,6 +42,7 @@ export default function ProjectDetail() {
       setIsManager(manager);
     }).catch(() => {});
     base44.entities.Client.list().then(setClients).catch(() => {});
+    base44.entities.Contractor.list().then(setContractors).catch(() => {});
   }, [id]);
 
   if (loading) {
@@ -65,7 +68,21 @@ export default function ProjectDetail() {
     { label: "Stage", value: <StatusBadge status={project.stage} /> },
     { label: "Project Type", value: project.project_type || "—" },
     { label: "Priority", value: <StatusBadge status={project.priority} /> },
-    { label: "Assigned To", value: project.assigned_to || "—" },
+    { label: "Assigned To", value: project.assigned_to ? (
+      <div className="flex flex-wrap gap-1">
+        {project.assigned_to.split(",").map((name) => {
+          const trimmed = name.trim();
+          const contractor = contractors.find((c) => c.name === trimmed);
+          return contractor ? (
+            <Link key={trimmed} to={`/contractors/${contractor.id}`} className="text-xs bg-muted hover:bg-sky-100 hover:text-sky-700 rounded-full px-2 py-0.5 transition-colors">
+              {trimmed}
+            </Link>
+          ) : (
+            <span key={trimmed} className="text-xs bg-muted rounded-full px-2 py-0.5">{trimmed}</span>
+          );
+        })}
+      </div>
+    ) : "—" },
     { label: "Start Date", value: fmtDate(project.start_date) },
     { label: "Due Date", value: fmtDate(project.due_date) },
   ];
@@ -148,6 +165,13 @@ export default function ProjectDetail() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Tasks Section */}
+      <Card className="border-0 shadow-sm mb-6">
+        <CardContent className="py-6">
+          <ProjectTasks projectId={id} />
+        </CardContent>
+      </Card>
 
       <ProjectFormDialog open={dialogOpen} onOpenChange={setDialogOpen} editing={project} clients={clients} onSaved={load} />
     </div>

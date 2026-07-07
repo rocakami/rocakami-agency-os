@@ -23,6 +23,7 @@ const EMPTY = {
 export default function ProjectFormDialog({ open, onOpenChange, editing, clients, onSaved }) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [contractors, setContractors] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,10 +33,28 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
       } else {
         setForm(EMPTY);
       }
+      base44.entities.Contractor.list().then(setContractors).catch(() => {});
     }
   }, [open, editing]);
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+
+  const parseAssigned = (val) => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return String(val).split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  };
+
+  const toggleContractor = (name) => {
+    const current = parseAssigned(form.assigned_to);
+    const next = current.includes(name) ? current.filter((n) => n !== name) : [...current, name];
+    set("assigned_to", next.join(", "));
+  };
 
   const save = async () => {
     if (!form.title || !form.client_name) {
@@ -106,7 +125,42 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{PRIORITIES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
               </Select>
-              <Input placeholder="Assigned To" value={form.assigned_to} onChange={(e) => set("assigned_to", e.target.value)} />
+              <div className="space-y-1">
+                <Select value="__placeholder__" onValueChange={toggleContractor}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={parseAssigned(form.assigned_to).length > 0 ? `${parseAssigned(form.assigned_to).length} assigned` : "Assign contractors"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contractors.length === 0
+                      ? <SelectItem value="__none" disabled>No contractors available</SelectItem>
+                      : contractors.map((c) => {
+                        const name = c.name;
+                        const selected = parseAssigned(form.assigned_to).includes(name);
+                        return (
+                          <SelectItem key={c.id} value={name}>
+                            <span className="flex items-center gap-2">
+                              <span className={`w-3 h-3 rounded border flex items-center justify-center ${selected ? "bg-primary border-primary" : "border-input"}`}>
+                                {selected && <span className="text-white text-[8px]">✓</span>}
+                              </span>
+                              {name}
+                            </span>
+                          </SelectItem>
+                        );
+                      })
+                    }
+                  </SelectContent>
+                </Select>
+                {parseAssigned(form.assigned_to).length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {parseAssigned(form.assigned_to).map((name) => (
+                      <span key={name} className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+                        {name}
+                        <button type="button" onClick={() => toggleContractor(name)} className="text-muted-foreground hover:text-destructive">×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

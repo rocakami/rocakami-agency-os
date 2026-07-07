@@ -1,0 +1,16 @@
+{
+  "name": "ContractorNote",
+  "type": "object",
+  "properties": {
+    "contractor_id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contractor_id",
+    "content"
+  ]
+}

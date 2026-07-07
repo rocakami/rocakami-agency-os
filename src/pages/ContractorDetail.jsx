@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import ContractorNotes from "@/components/contractor/ContractorNotes";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -22,8 +23,9 @@ export default function ContractorDetail() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminForm, setAdminForm] = useState({ rate: "", folder_url: "", performance_notes: "" });
+  const [adminForm, setAdminForm] = useState({ rate: "", folder_url: "" });
   const [savingAdmin, setSavingAdmin] = useState(false);
+  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -37,9 +39,9 @@ export default function ContractorDetail() {
         setContractor(c);
         setAdminForm({
           rate: c.rate || "",
-          folder_url: c.folder_url || "",
-          performance_notes: c.performance_notes || ""
+          folder_url: c.folder_url || ""
         });
+        base44.entities.Client.list().then(setClients).catch(() => {});
         const allProjects = await base44.entities.ClientProject.list();
         const matched = allProjects.filter((p) =>
           p.assigned_to && c.name && p.assigned_to.toLowerCase().includes(c.name.toLowerCase())
@@ -75,10 +77,20 @@ export default function ContractorDetail() {
     { icon: Phone, label: "Phone", value: contractor.phone },
     { icon: MapPin, label: "Address", value: contractor.address },
     { icon: AlertTriangle, label: "Emergency Contact", value: contractor.emergency_contact },
-    { icon: Users, label: "Assigned Clients", value: contractor.assigned_clients },
     { icon: Calendar, label: "Start Date", value: contractor.start_date ? new Date(contractor.start_date).toLocaleDateString() : null },
     { icon: Badge, label: "Employee ID", value: contractor.employee_id }
   ].filter((d) => d.value);
+
+  const parseClientsList = (val) => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return String(val).split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  };
 
   return (
     <div>
@@ -114,6 +126,27 @@ export default function ContractorDetail() {
               })}
             </div>
 
+            {contractor.assigned_clients && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Assigned Clients</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {parseClientsList(contractor.assigned_clients).map((name) => {
+                    const client = clients.find((c) => (c.company_name || c.name) === name);
+                    return client ? (
+                      <Link key={name} to={`/clients/${client.id}`} className="text-xs bg-muted hover:bg-sky-100 hover:text-sky-700 rounded-full px-2 py-1 transition-colors">
+                        {name}
+                      </Link>
+                    ) : (
+                      <span key={name} className="text-xs bg-muted rounded-full px-2 py-1">{name}</span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="mt-4 pt-4 border-t space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Category:</span>
@@ -148,7 +181,7 @@ export default function ContractorDetail() {
                 {projects.map((p) => (
                   <Link
                     key={p.id}
-                    to={`/clients/${p.id}`}
+                    to={`/projects/${p.id}`}
                     className="block rounded-lg border p-3 hover:border-sky-300 hover:bg-muted/30 transition-all"
                   >
                     <div className="flex items-center justify-between">
@@ -195,9 +228,9 @@ export default function ContractorDetail() {
                 )}
               </div>
             </div>
-            <div className="space-y-1 mt-4">
+            <div className="space-y-2 mt-4">
               <label className="text-xs font-medium text-muted-foreground">Notes</label>
-              <Textarea value={adminForm.performance_notes} onChange={(e) => setAdminForm({ ...adminForm, performance_notes: e.target.value })} rows={4} placeholder="Write notes about this staff member…" />
+              <ContractorNotes contractorId={id} />
             </div>
             <Button onClick={saveAdmin} disabled={savingAdmin} className="gap-2 mt-4">
               {savingAdmin ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

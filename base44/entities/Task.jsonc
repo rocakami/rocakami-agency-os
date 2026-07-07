@@ -35,6 +35,9 @@
     },
     "related_module": {
       "type": "string"
+    },
+    "project_id": {
+      "type": "string"
     }
   },
   "required": [
