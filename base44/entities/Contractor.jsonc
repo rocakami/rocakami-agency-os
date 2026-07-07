@@ -45,6 +45,15 @@
       ],
       "default": "Full Time"
     },
+    "employment_category": {
+      "type": "string",
+      "enum": [
+        "Manager",
+        "Contractor",
+        "Employee"
+      ],
+      "default": "Contractor"
+    },
     "performance_notes": {
       "type": "string"
     },

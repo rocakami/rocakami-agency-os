@@ -16,8 +16,21 @@ import { useToast } from "@/components/ui/use-toast";
 
 const EMPTY = {
   name: "", role: "", email: "", phone: "", rate: "", assigned_clients: "",
-  contract_status: "Active", employment_status: "Full Time", performance_notes: "",
+  contract_status: "Active", employment_status: "Full Time", employment_category: "Contractor", performance_notes: "",
   start_date: "", employee_id: "", folder_url: "", supervisor: ""
+};
+
+const generateEmployeeId = (existing) => {
+  const year = String(new Date().getFullYear()).slice(2);
+  const prefix = `RK-${year}`;
+  let maxSeq = 0;
+  existing.forEach((c) => {
+    if (c.employee_id && c.employee_id.startsWith(prefix)) {
+      const seq = parseInt(c.employee_id.slice(prefix.length), 10);
+      if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+    }
+  });
+  return `${prefix}${String(maxSeq + 1).padStart(4, "0")}`;
 };
 
 export default function Contractors() {
@@ -69,6 +82,7 @@ export default function Contractors() {
       name: c.name || "", role: c.role || "", email: c.email || "", phone: c.phone || "",
       rate: c.rate || "", assigned_clients: c.assigned_clients || "",
       contract_status: c.contract_status || "Active", employment_status: c.employment_status || "Full Time",
+      employment_category: c.employment_category || "Contractor",
       performance_notes: c.performance_notes || "", start_date: c.start_date || "",
       employee_id: c.employee_id || "", folder_url: c.folder_url || "", supervisor: c.supervisor || ""
     });
@@ -82,7 +96,8 @@ export default function Contractors() {
       if (editing) {
         await base44.entities.Contractor.update(editing.id, form);
       } else {
-        await base44.entities.Contractor.create(form);
+        const employeeId = generateEmployeeId(contractors);
+        await base44.entities.Contractor.create({ ...form, employee_id: employeeId });
       }
       setDialogOpen(false);
       load();
@@ -134,6 +149,7 @@ export default function Contractors() {
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Role</TableHead>
                   <TableHead className="font-semibold">Supervisor</TableHead>
+                  <TableHead className="font-semibold">Category</TableHead>
                   <TableHead className="font-semibold">Employment</TableHead>
                   <TableHead className="font-semibold">Contract</TableHead>
                   <TableHead className="font-semibold">Folder</TableHead>
@@ -153,6 +169,7 @@ export default function Contractors() {
                     </TableCell>
                     <TableCell className="text-sm">{c.role}</TableCell>
                     <TableCell className="text-sm">{c.supervisor || "—"}</TableCell>
+                    <TableCell className="text-sm">{c.employment_category || "—"}</TableCell>
                     <TableCell className="text-sm">{c.employment_status || "—"}</TableCell>
                     <TableCell><StatusBadge status={c.contract_status} /></TableCell>
                     <TableCell className="text-sm">
@@ -240,10 +257,14 @@ export default function Contractors() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{["Full Time", "Part Time", "Project Based"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
+              <Select value={form.employment_category} onValueChange={(v) => setForm({ ...form, employment_category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{["Manager", "Contractor", "Employee"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
-              <Input placeholder="Employee ID" value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })} />
+              <Input placeholder="Employee ID" value={form.employee_id} readOnly disabled className="bg-muted cursor-not-allowed text-muted-foreground" />
             </div>
             <Input placeholder="Personal folder URL" value={form.folder_url} onChange={(e) => setForm({ ...form, folder_url: e.target.value })} />
             <Textarea placeholder="Performance notes" value={form.performance_notes} onChange={(e) => setForm({ ...form, performance_notes: e.target.value })} />

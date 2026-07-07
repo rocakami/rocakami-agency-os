@@ -116,6 +116,10 @@ export default function ContractorDetail() {
 
             <div className="mt-4 pt-4 border-t space-y-2">
               <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Category:</span>
+                <span className="text-sm font-medium">{contractor.employment_category || "—"}</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Contract:</span>
                 <StatusBadge status={contractor.contract_status} />
               </div>
@@ -187,7 +191,7 @@ export default function ContractorDetail() {
             <div className="grid sm:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Employee ID Number</label>
-                <Input value={adminForm.employee_id} onChange={(e) => setAdminForm({ ...adminForm, employee_id: e.target.value })} placeholder="e.g. RK-001" />
+                <Input value={adminForm.employee_id} readOnly disabled className="bg-muted text-muted-foreground" placeholder="Auto-generated on creation" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Personal Folder Link</label>
