@@ -147,6 +147,7 @@ export default function Contractors() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="font-semibold">Name</TableHead>
+                  <TableHead className="font-semibold">Employee ID</TableHead>
                   <TableHead className="font-semibold">Role</TableHead>
                   <TableHead className="font-semibold">Supervisor</TableHead>
                   <TableHead className="font-semibold">Category</TableHead>
@@ -167,6 +168,7 @@ export default function Contractors() {
                         </div>
                       </Link>
                     </TableCell>
+                    <TableCell className="text-sm font-mono">{c.employee_id || "—"}</TableCell>
                     <TableCell className="text-sm">{c.role}</TableCell>
                     <TableCell className="text-sm">{c.supervisor || "—"}</TableCell>
                     <TableCell className="text-sm">{c.employment_category || "—"}</TableCell>
