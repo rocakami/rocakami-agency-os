@@ -57,8 +57,8 @@ export default function AdminNavCategories() {
   };
 
   // --- Section management ---
-  const addSection = () => {
-    setEditSection({ label: "", path: "", icon: "LayoutDashboard", category_name: "", order: sections.length, _isNew: true });
+  const addSection = (categoryName = "") => {
+    setEditSection({ label: "", path: "", icon: "LayoutDashboard", category_name: categoryName, order: sections.length, _isNew: true });
   };
   const saveSection = () => {
     if (!editSection.label.trim() || !editSection.path.trim()) {
@@ -157,64 +157,114 @@ export default function AdminNavCategories() {
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground mb-4">Add, edit, and reorder nav sections (sidebar links). Assign each section to a category to group it under a header. Unassigned sections appear without a header.</p>
+      <p className="text-xs text-muted-foreground mb-4">Create categories to group your nav links. Sections are listed under their assigned category. Unassigned sections appear at the bottom.</p>
 
-      {/* Categories editor */}
-      {categories.length > 0 && (
-        <div className="space-y-2 mb-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Categories</p>
-          {categories.map((cat, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <div className="flex flex-col">
-                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(idx, -1)} disabled={idx === 0}>▲</Button>
-                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(idx, 1)} disabled={idx === categories.length - 1}>▼</Button>
+      {/* Categories with nested sections */}
+      <div className="space-y-4">
+        {categories.map((cat, catIdx) => {
+          const catSections = sections
+            .map((s, i) => ({ ...s, _origIdx: i }))
+            .filter((s) => s.category_name === cat.name);
+          return (
+            <div key={catIdx} className="rounded-xl border border-border overflow-hidden">
+              {/* Category header */}
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-navy-50 border-b border-border">
+                <div className="flex flex-col">
+                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(catIdx, -1)} disabled={catIdx === 0}>▲</Button>
+                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(catIdx, 1)} disabled={catIdx === categories.length - 1}>▼</Button>
+                </div>
+                <Input
+                  placeholder="Category name (e.g. Operations)"
+                  value={cat.name}
+                  onChange={(e) => {
+                    const oldName = cat.name;
+                    updateCategory(catIdx, "name", e.target.value);
+                    setSections(sections.map((s) => s.category_name === oldName ? { ...s, category_name: e.target.value } : s));
+                  }}
+                  className="font-semibold uppercase tracking-wide text-sm max-w-xs bg-white"
+                />
+                <Button variant="ghost" size="sm" onClick={() => addSection(cat.name)} className="ml-auto gap-1 text-xs">
+                  <Plus className="w-3.5 h-3.5" /> Add Section
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => removeCategory(catIdx)} className="text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
-              <Input
-                placeholder="Category name (e.g. Operations)"
-                value={cat.name}
-                onChange={(e) => updateCategory(idx, "name", e.target.value)}
-                className="font-semibold uppercase tracking-wide text-sm max-w-xs"
-              />
-              <Button variant="ghost" size="sm" onClick={() => removeCategory(idx)} className="ml-auto text-destructive hover:text-destructive">
-                <Trash2 className="w-4 h-4" />
+              {/* Sections under this category */}
+              <div className="p-2 space-y-1 bg-white">
+                {catSections.map((sec) => (
+                  <div key={sec._origIdx} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border hover:bg-muted/40 transition-colors">
+                    <div className="flex flex-col">
+                      <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(sec._origIdx, -1)} disabled={sec._origIdx === 0}>▲</Button>
+                      <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(sec._origIdx, 1)} disabled={sec._origIdx === sections.length - 1}>▼</Button>
+                    </div>
+                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-mono text-xs">
+                      {sec.icon?.slice(0, 2) || "○"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{sec.label}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{sec.path}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => editExistingSection(sec._origIdx)} className="text-muted-foreground">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => removeSection(sec._origIdx)} className="text-destructive hover:text-destructive">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {catSections.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-3">No sections in this category yet.</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Uncategorized sections */}
+        {uncategorizedSections.length > 0 && (
+          <div className="rounded-xl border border-dashed border-border overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-muted/30 border-b border-border">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">Uncategorized</p>
+              <Button variant="ghost" size="sm" onClick={() => addSection("")} className="ml-auto gap-1 text-xs">
+                <Plus className="w-3.5 h-3.5" /> Add Section
               </Button>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Sections */}
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Sections (Nav Links)</p>
-      <div className="space-y-1">
-        {sections.map((sec, idx) => (
-          <div key={idx} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-white hover:bg-muted/40 transition-colors">
-            <div className="flex flex-col">
-              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(idx, -1)} disabled={idx === 0}>▲</Button>
-              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(idx, 1)} disabled={idx === sections.length - 1}>▼</Button>
+            <div className="p-2 space-y-1 bg-white">
+              {uncategorizedSections.map((sec) => {
+                const idx = sections.indexOf(sec);
+                return (
+                  <div key={idx} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border hover:bg-muted/40 transition-colors">
+                    <div className="flex flex-col">
+                      <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(idx, -1)} disabled={idx === 0}>▲</Button>
+                      <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(idx, 1)} disabled={idx === sections.length - 1}>▼</Button>
+                    </div>
+                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-mono text-xs">
+                      {sec.icon?.slice(0, 2) || "○"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{sec.label}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{sec.path}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => editExistingSection(idx)} className="text-muted-foreground">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => removeSection(idx)} className="text-destructive hover:text-destructive">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex-1 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-mono text-xs">
-                {sec.icon?.slice(0, 2) || "○"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{sec.label}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{sec.path}</p>
-              </div>
-              {sec.category_name && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-navy-50 text-navy-600 border border-navy-200 font-medium">{sec.category_name}</span>
-              )}
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => editExistingSection(idx)} className="text-muted-foreground">
-              <Pencil className="w-3.5 h-3.5" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => removeSection(idx)} className="text-destructive hover:text-destructive">
-              <Trash2 className="w-3.5 h-3.5" />
-            </Button>
           </div>
-        ))}
-        {sections.length === 0 && (
+        )}
+
+        {/* Empty state */}
+        {categories.length === 0 && sections.length === 0 && (
           <Card className="border-0 shadow-sm">
-            <CardContent className="p-4 text-center text-sm text-muted-foreground">No sections yet. Click "Add Section" to create a nav link.</CardContent>
+            <CardContent className="p-4 text-center text-sm text-muted-foreground">
+              No categories or sections yet. Click "Add Category" or "Add Section" to get started.
+            </CardContent>
           </Card>
         )}
       </div>
