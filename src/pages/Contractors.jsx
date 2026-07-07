@@ -204,16 +204,19 @@ export default function Contractors() {
                 <SelectContent>
                   {clients.length === 0
                     ? <SelectItem value="__none" disabled>No clients available</SelectItem>
-                    : clients.map((cl) => (
-                      <SelectItem key={cl.id} value={cl.name}>
-                        <span className="flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded border flex items-center justify-center ${parseClients(form.assigned_clients).includes(cl.name) ? "bg-primary border-primary" : "border-input"}`}>
-                            {parseClients(form.assigned_clients).includes(cl.name) && <span className="text-white text-[8px]">✓</span>}
+                    : clients.map((cl) => {
+                      const displayName = cl.company_name || cl.name;
+                      return (
+                        <SelectItem key={cl.id} value={displayName}>
+                          <span className="flex items-center gap-2">
+                            <span className={`w-3 h-3 rounded border flex items-center justify-center ${parseClients(form.assigned_clients).includes(displayName) ? "bg-primary border-primary" : "border-input"}`}>
+                              {parseClients(form.assigned_clients).includes(displayName) && <span className="text-white text-[8px]">✓</span>}
+                            </span>
+                            {displayName}
                           </span>
-                          {cl.name}
-                        </span>
-                      </SelectItem>
-                    ))
+                        </SelectItem>
+                      );
+                    })
                   }
                 </SelectContent>
               </Select>
