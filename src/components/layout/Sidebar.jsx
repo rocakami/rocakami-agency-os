@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Menu, X, Shield, Globe, Briefcase, UserCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, X, Shield, Globe, Briefcase, UserCircle, LogOut } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 import { getNavIcon as getIcon } from "@/lib/nav-icons";
@@ -230,6 +230,15 @@ export default function Sidebar() {
           <UserCircle className="w-[18px] h-[18px] shrink-0" />
           {!collapsed && <span>My Account</span>}
         </Link>
+        <button
+          onClick={() => base44.auth.logout()}
+          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mt-0.5
+            ${collapsed ? "justify-center" : ""}
+          `}
+        >
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
       </div>
 
       {/* Admin Panel link (admins only) */}

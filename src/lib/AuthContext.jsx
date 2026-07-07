@@ -98,15 +98,13 @@ export const AuthProvider = ({ children }) => {
       // Domain restriction: only @rocakami.com emails allowed
       const email = currentUser?.email || '';
       if (!email.toLowerCase().endsWith('@rocakami.com')) {
-        setUser(null);
-        setIsAuthenticated(false);
         setAuthError({
           type: 'domain_restricted',
           message: 'Access is restricted to @rocakami.com accounts.'
         });
         setIsLoadingAuth(false);
+        setIsAuthenticated(false);
         setAuthChecked(true);
-        base44.auth.logout();
         return;
       }
       
