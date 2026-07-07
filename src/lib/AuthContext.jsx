@@ -94,6 +94,22 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      
+      // Domain restriction: only @rocakami.com emails allowed
+      const email = currentUser?.email || '';
+      if (!email.toLowerCase().endsWith('@rocakami.com')) {
+        setUser(null);
+        setIsAuthenticated(false);
+        setAuthError({
+          type: 'domain_restricted',
+          message: 'Access is restricted to @rocakami.com accounts.'
+        });
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+        base44.auth.logout();
+        return;
+      }
+      
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);

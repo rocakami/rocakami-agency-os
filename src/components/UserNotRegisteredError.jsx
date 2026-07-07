@@ -12,7 +12,7 @@ const UserNotRegisteredError = () => {
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-4">Access Restricted</h1>
           <p className="text-slate-600 mb-8">
-            You are not registered to use this application. Please contact the app administrator to request access.
+            This portal is restricted to <strong>@rocakami.com</strong> Google accounts. Please sign in with your Rocakami Google account.
           </p>
           <div className="p-4 bg-slate-50 rounded-md text-sm text-slate-600">
             <p>If you believe this is an error, you can:</p>

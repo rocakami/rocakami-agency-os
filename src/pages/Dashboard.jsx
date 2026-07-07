@@ -27,16 +27,20 @@ export default function Dashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [me, ann, tsk, docs, sops] = await Promise.all([
+        const [me, ann, allTasks, docs, sops] = await Promise.all([
           base44.auth.me(),
           base44.entities.Announcement.list("-created_date", 3),
-          base44.entities.Task.filter({ status: "To Do" }, "-created_date", 5),
+          base44.entities.Task.filter({ status: "To Do" }, "-due_date", 50),
           base44.entities.Document.list("-updated_date", 5),
           base44.entities.SOP.list("-updated_date", 5),
         ]);
         setUser(me);
         setAnnouncements(ann);
-        setTasks(tsk);
+        const userName = me?.full_name || "";
+        const userTasks = userName
+          ? allTasks.filter((t) => t.assigned_to && t.assigned_to.toLowerCase().includes(userName.toLowerCase()))
+          : [];
+        setTasks(userTasks);
         setRecentDocs(docs);
         setRecentSops(sops);
       } catch (e) { console.error(e); }

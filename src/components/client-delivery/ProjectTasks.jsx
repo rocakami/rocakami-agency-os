@@ -24,6 +24,7 @@ export default function ProjectTasks({ projectId }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: "", assigned_to: "", due_date: "", priority: "Medium", status: "To Do" });
+  const [contractors, setContractors] = useState([]);
   const { toast } = useToast();
 
   const load = () => {
@@ -32,7 +33,10 @@ export default function ProjectTasks({ projectId }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, [projectId]);
+  useEffect(() => {
+    load();
+    base44.entities.Contractor.list().then(setContractors).catch(() => {});
+  }, [projectId]);
 
   const addTask = async () => {
     if (!form.title.trim()) return;
@@ -86,7 +90,15 @@ export default function ProjectTasks({ projectId }) {
         <div className="rounded-lg border p-3 mb-3 space-y-2 bg-muted/30">
           <Input placeholder="Task title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <div className="grid grid-cols-2 gap-2">
-            <Input placeholder="Assigned to" value={form.assigned_to} onChange={(e) => setForm({ ...form, assigned_to: e.target.value })} />
+            <Select value={form.assigned_to} onValueChange={(v) => setForm({ ...form, assigned_to: v })}>
+              <SelectTrigger><SelectValue placeholder="Assigned to" /></SelectTrigger>
+              <SelectContent>
+                {contractors.length === 0
+                  ? <SelectItem value="__none" disabled>No contractors available</SelectItem>
+                  : contractors.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)
+                }
+              </SelectContent>
+            </Select>
             <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-2">
