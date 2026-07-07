@@ -181,7 +181,7 @@ export default function Contractors() {
                     <TableCell><StatusBadge status={c.contract_status} /></TableCell>
                     <TableCell className="text-sm">
                       {c.folder_url
-                        ? <a href={c.folder_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-sky-600 hover:underline inline-flex items-center gap-1">Open <ExternalLink className="w-3 h-3" /></a>
+                        ? <a href={c.folder_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-sky-600 hover:underline inline-flex items-center gap-1">Here <ExternalLink className="w-3 h-3" /></a>
                         : (isAdmin
                           ? (generatingId === c.id
                             ? <span className="text-muted-foreground inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Creating…</span>

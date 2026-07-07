@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const PARENT_FOLDER_ID = "1piYdifCJYPPPB6fuEbqU6CHqzlllLbXC";
+const PARENT_FOLDER_ID = "12h4Sp3fW3fFpoT2_exPU9qkS02Ks49i8";
 
 Deno.serve(async (req) => {
   try {
