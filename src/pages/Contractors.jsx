@@ -221,7 +221,17 @@ export default function Contractors() {
               <Input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
-            <Input placeholder="Immediate Supervisor" value={form.supervisor} onChange={(e) => setForm({ ...form, supervisor: e.target.value })} />
+            <Select value={form.supervisor || "__none"} onValueChange={(v) => setForm({ ...form, supervisor: v === "__none" ? "" : v })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Immediate Supervisor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">— None —</SelectItem>
+                {contractors.filter((c) => c.employment_category === "Manager").map((c) => (
+                  <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input placeholder="Rate (e.g. $50/hr)" value={form.rate} onChange={(e) => setForm({ ...form, rate: e.target.value })} />
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Assigned Clients</label>
