@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   Loader2, ArrowLeft, Mail, Phone, MapPin, Calendar,
   DollarSign, Users, FileText, AlertTriangle, FolderOpen,
-  Shield, Save, Badge, Link as LinkIcon
+  Shield, Save, Badge, Link as LinkIcon, ExternalLink
 } from "lucide-react";
 
 export default function ContractorDetail() {
@@ -186,7 +186,13 @@ export default function ContractorDetail() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Personal Folder</label>
-                <Input value={adminForm.folder_url} onChange={(e) => setAdminForm({ ...adminForm, folder_url: e.target.value })} placeholder="https://drive.google.com/…" />
+                {adminForm.folder_url ? (
+                  <a href={adminForm.folder_url} target="_blank" rel="noopener noreferrer" className="text-sm text-sky-600 hover:underline break-all inline-flex items-center gap-1">
+                    <ExternalLink className="w-3 h-3" /> Open Folder
+                  </a>
+                ) : (
+                  <Input value={adminForm.folder_url} onChange={(e) => setAdminForm({ ...adminForm, folder_url: e.target.value })} placeholder="https://drive.google.com/…" />
+                )}
               </div>
             </div>
             <div className="space-y-1 mt-4">
