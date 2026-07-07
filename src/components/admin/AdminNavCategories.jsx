@@ -68,7 +68,7 @@ export default function AdminNavCategories() {
     if (editSection._isNew) {
       setSections([...sections, { ...editSection, _isNew: false }]);
     } else {
-      setSections(sections.map((s) => s._editKey === editSection._editKey ? editSection : s));
+      setSections(sections.map((s, i) => i === editSection._editKey ? { ...editSection, _editKey: undefined } : s));
     }
     setEditSection(null);
   };
