@@ -11,10 +11,9 @@ export default function AppLayout() {
         if (!me?.email) return;
         const matches = await base44.entities.Contractor.filter({ email: me.email });
         if (matches.length === 0) {
-          await base44.entities.Contractor.create({
-            name: me.full_name || me.email,
-            role: "",
-            email: me.email
+          await base44.functions.invoke('manageContractor', {
+            action: 'create',
+            data: { name: me.full_name || me.email, role: "", email: me.email }
           });
         }
       } catch (e) { /* non-critical */ }

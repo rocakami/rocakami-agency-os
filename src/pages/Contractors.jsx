@@ -20,18 +20,7 @@ const EMPTY = {
   start_date: "", employee_id: "", folder_url: "", supervisor: ""
 };
 
-const generateEmployeeId = (existing) => {
-  const year = String(new Date().getFullYear()).slice(2);
-  const prefix = `RK-${year}`;
-  let maxSeq = 0;
-  existing.forEach((c) => {
-    if (c.employee_id && c.employee_id.startsWith(prefix)) {
-      const seq = parseInt(c.employee_id.slice(prefix.length), 10);
-      if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
-    }
-  });
-  return `${prefix}${String(maxSeq + 1).padStart(4, "0")}`;
-};
+
 
 export default function Contractors() {
   const [contractors, setContractors] = useState([]);
@@ -97,8 +86,7 @@ export default function Contractors() {
       if (editing) {
         await base44.entities.Contractor.update(editing.id, form);
       } else {
-        const employeeId = generateEmployeeId(contractors);
-        await base44.entities.Contractor.create({ ...form, employee_id: employeeId });
+        await base44.functions.invoke('manageContractor', { action: 'create', data: form });
       }
       setDialogOpen(false);
       load();
@@ -125,11 +113,11 @@ export default function Contractors() {
     setGeneratingId(null);
   };
 
-  const remove = async (id) => {
+  const remove = async (c) => {
     try {
-      await base44.entities.Contractor.delete(id);
+      await base44.functions.invoke('manageContractor', { action: 'delete', contractor_id: c.id });
       load();
-      toast({ title: "Contractor removed" });
+      toast({ title: "Contractor removed", description: c.email ? "Access revoked and account deleted" : undefined });
     } catch (e) {
       toast({ title: "Error removing contractor", variant: "destructive" });
     }
@@ -207,7 +195,7 @@ export default function Contractors() {
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove(c.id)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove(c)}>
                             <Trash2 className="w-3.5 h-3.5 text-destructive" />
                           </Button>
                         </div>

@@ -53,8 +53,8 @@ export default function Profile() {
       if (contractor) {
         await base44.entities.Contractor.update(contractor.id, form);
       } else {
-        const created = await base44.entities.Contractor.create(form);
-        setContractor(created);
+        const res = await base44.functions.invoke('manageContractor', { action: 'create', data: form });
+        setContractor(res.data);
       }
       toast({ title: "Profile saved successfully" });
     } catch (e) {

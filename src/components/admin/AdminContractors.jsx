@@ -26,12 +26,12 @@ export default function AdminContractors() {
 
   const save = async () => {
     if (!form.name || !form.role) return;
-    if (editing) { await base44.entities.Contractor.update(editing.id, form); } else { await base44.entities.Contractor.create(form); }
+    if (editing) { await base44.entities.Contractor.update(editing.id, form); } else { await base44.functions.invoke('manageContractor', { action: 'create', data: form }); }
     setDialogOpen(false); load();
     toast({ title: editing ? "Contractor updated" : "Contractor added" });
   };
 
-  const remove = async (id) => { await base44.entities.Contractor.delete(id); load(); toast({ title: "Contractor removed" }); };
+  const remove = async (c) => { await base44.functions.invoke('manageContractor', { action: 'delete', contractor_id: c.id }); load(); toast({ title: "Contractor removed", description: c.email ? "Access revoked and account deleted" : undefined }); };
 
   return (
     <div>
@@ -54,7 +54,7 @@ export default function AdminContractors() {
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(c)}><Pencil className="w-3.5 h-3.5" /></Button>
-                    <Button variant="ghost" size="sm" onClick={() => remove(c.id)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => remove(c)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
                   </div>
                 </TableCell>
               </TableRow>
