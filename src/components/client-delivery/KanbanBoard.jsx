@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, Plus, ExternalLink, Loader2 } from "lucide-react";
+import { Search, Plus, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,18 @@ export default function KanbanBoard() {
 
   const openAdd = () => { setEditing(null); setDialogOpen(true); };
   const openEdit = (project) => { setEditing(project); setDialogOpen(true); };
+
+  const remove = async (e, project) => {
+    e.stopPropagation();
+    if (!window.confirm(`Delete "${project.title}"?`)) return;
+    try {
+      await base44.entities.ClientProject.delete(project.id);
+      toast({ title: "Project deleted" });
+      load();
+    } catch {
+      toast({ title: "Failed to delete", variant: "destructive" });
+    }
+  };
 
   const generateFolder = async (project) => {
     setGeneratingId(project.id);
@@ -118,12 +130,13 @@ export default function KanbanBoard() {
               <TableHead className="w-[130px]">Due Date</TableHead>
               <TableHead className="w-[100px]">Stage</TableHead>
               <TableHead className="w-[120px]">Folder</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                   No projects found.
                 </TableCell>
               </TableRow>
@@ -163,6 +176,11 @@ export default function KanbanBoard() {
                         Generate
                       </button>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <button onClick={(e) => remove(e, p)} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </TableCell>
                 </TableRow>
               ))
