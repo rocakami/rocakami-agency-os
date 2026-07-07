@@ -5,6 +5,9 @@
     "title": {
       "type": "string"
     },
+    "project_id": {
+      "type": "string"
+    },
     "client_name": {
       "type": "string"
     },
@@ -38,6 +41,46 @@
     "due_date": {
       "type": "string",
       "format": "date"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "project_type": {
+      "type": "string",
+      "enum": [
+        "Website",
+        "SEO",
+        "Branding",
+        "Marketing",
+        "CRM & GHL",
+        "Automation",
+        "Other"
+      ],
+      "default": "Website"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0
+    },
+    "contract_value": {
+      "type": "number"
+    },
+    "budget": {
+      "type": "number"
+    },
+    "billing_status": {
+      "type": "string",
+      "enum": [
+        "Not Billed",
+        "Partially Billed",
+        "Fully Billed",
+        "Overdue"
+      ],
+      "default": "Not Billed"
+    },
+    "internal_notes": {
+      "type": "string"
     }
   },
   "required": [
