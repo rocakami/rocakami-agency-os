@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, UserCheck, Pencil, Trash2, Loader2, ExternalLink } from "lucide-react";
+import { Search, UserCheck, Pencil, Trash2, Loader2, ExternalLink, FolderPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ export default function Contractors() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [clients, setClients] = useState([]);
+  const [generatingId, setGeneratingId] = useState(null);
   const { toast } = useToast();
 
   const load = () => base44.entities.Contractor.list("-created_date").then(setContractors).finally(() => setLoading(false));
@@ -106,6 +107,22 @@ export default function Contractors() {
       toast({ title: "Error saving contractor", variant: "destructive" });
     }
     setSaving(false);
+  };
+
+  const generateFolder = async (contractor) => {
+    if (!contractor.employee_id) {
+      toast({ title: "Employee ID required before generating folder", variant: "destructive" });
+      return;
+    }
+    setGeneratingId(contractor.id);
+    try {
+      const res = await base44.functions.invoke('generateContractorFolder', { contractor_id: contractor.id });
+      setContractors((prev) => prev.map((c) => c.id === contractor.id ? { ...c, folder_url: res.data.folder_url } : c));
+      toast({ title: "Folder created", description: `${contractor.employee_id} - ${contractor.name}` });
+    } catch (e) {
+      toast({ title: "Error creating folder", variant: "destructive" });
+    }
+    setGeneratingId(null);
   };
 
   const remove = async (id) => {
@@ -177,7 +194,11 @@ export default function Contractors() {
                     <TableCell className="text-sm">
                       {c.folder_url
                         ? <a href={c.folder_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-sky-600 hover:underline inline-flex items-center gap-1">Open <ExternalLink className="w-3 h-3" /></a>
-                        : <span className="text-muted-foreground">—</span>
+                        : (isAdmin
+                          ? (generatingId === c.id
+                            ? <span className="text-muted-foreground inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Creating…</span>
+                            : <button onClick={() => generateFolder(c)} className="text-sky-600 hover:underline inline-flex items-center gap-1 font-medium"><FolderPlus className="w-3 h-3" /> Generate</button>)
+                          : <span className="text-muted-foreground">—</span>)
                       }
                     </TableCell>
                     {isAdmin && (
