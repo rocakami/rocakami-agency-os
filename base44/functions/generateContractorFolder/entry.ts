@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const PARENT_FOLDER_ID = "12h4Sp3fW3fFpoT2_exPU9qkS02Ks49i8";
+const PARENT_FOLDER_ID = "1piYdifCJYPPPB6fuEbqU6CHqzlllLbXC";
 
 Deno.serve(async (req) => {
   try {
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
 
-    const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+    const response = await fetch('https://www.googleapis.com/drive/v3/files?supportsAllDrives=true', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
