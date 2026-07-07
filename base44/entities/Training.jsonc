@@ -1,0 +1,39 @@
+{
+  "name": "Training",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Video",
+        "Written Guide",
+        "Quiz",
+        "Checklist"
+      ]
+    },
+    "role_path": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string"
+    },
+    "completion_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "type"
+  ]
+}

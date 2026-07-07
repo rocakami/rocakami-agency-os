@@ -1,0 +1,50 @@
+{
+  "name": "Contractor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "rate": {
+      "type": "string"
+    },
+    "assigned_clients": {
+      "type": "string"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "Paid",
+        "Pending",
+        "Overdue"
+      ],
+      "default": "Pending"
+    },
+    "contract_status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Expired",
+        "On Hold"
+      ],
+      "default": "Active"
+    },
+    "performance_notes": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "name",
+    "role"
+  ]
+}

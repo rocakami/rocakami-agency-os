@@ -1,0 +1,44 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Company Policies",
+        "Client Templates",
+        "Proposal Templates",
+        "Contracts",
+        "Internal Checklists",
+        "Training Materials",
+        "Brand Assets",
+        "Meeting Notes"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Archived",
+        "Draft"
+      ],
+      "default": "Active"
+    }
+  },
+  "required": [
+    "title",
+    "category"
+  ]
+}

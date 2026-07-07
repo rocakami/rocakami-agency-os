@@ -1,0 +1,55 @@
+{
+  "name": "SOP",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Sales",
+        "Client Onboarding",
+        "Website Project",
+        "CRM & GHL",
+        "SEO",
+        "Customer Support",
+        "Finance & Admin",
+        "HR & Contractor",
+        "Automation",
+        "Quality Assurance"
+      ]
+    },
+    "department": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Active",
+        "Needs Review"
+      ],
+      "default": "Draft"
+    },
+    "steps": {
+      "type": "string"
+    },
+    "tools_needed": {
+      "type": "string"
+    },
+    "related_templates": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "category"
+  ]
+}

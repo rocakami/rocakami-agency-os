@@ -1,0 +1,24 @@
+{
+  "name": "Bookmark",
+  "type": "object",
+  "properties": {
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "SOP",
+        "Document"
+      ]
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "item_title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "item_type",
+    "item_id",
+    "item_title"
+  ]
+}

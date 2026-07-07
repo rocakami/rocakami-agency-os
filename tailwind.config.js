@@ -59,7 +59,31 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+        navy: {
+          50: '#e8edf5',
+          100: '#c5d0e6',
+          200: '#9eb3d4',
+          300: '#7796c2',
+          400: '#5a81b5',
+          500: '#3d6ca8',
+          600: '#1a3676',
+          700: '#152c61',
+          800: '#10224c',
+          900: '#0b1837'
+        },
+        sky: {
+          50: '#e6f5fb',
+          100: '#bfe5f5',
+          200: '#95d4ee',
+          300: '#6bc3e7',
+          400: '#229ece',
+          500: '#1a8ab8',
+          600: '#13769f',
+          700: '#0d6287',
+          800: '#074e6e',
+          900: '#023a55'
+        }
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],
@@ -69,20 +93,12 @@ module.exports = {
   		},
   		keyframes: {
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-accordion-content-height)' }
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: '0' }
   			}
   		},
   		animation: {
