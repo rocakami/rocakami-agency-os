@@ -170,49 +170,47 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* ROCAKAMI links (admins only) */}
-      {user?.role === "admin" && (
-        <div className="px-2 pb-1 pt-2 border-t border-white/10">
-          {!collapsed && (
-            <>
-              <a
-                href="#"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-              >
-                <Briefcase className="w-[18px] h-[18px] shrink-0" />
-                <span>ROCAKAMI Job Board</span>
-              </a>
-              <a
-                href="https://www.rocakami.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-              >
-                <Globe className="w-[18px] h-[18px] shrink-0" />
-                <span>ROCAKAMI Website</span>
-              </a>
-            </>
-          )}
-          {collapsed && (
-            <>
-              <a
-                href="#"
-                className="flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-              >
-                <Briefcase className="w-[18px] h-[18px] shrink-0" />
-              </a>
-              <a
-                href="https://www.rocakami.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-              >
-                <Globe className="w-[18px] h-[18px] shrink-0" />
-              </a>
-            </>
-          )}
-        </div>
-      )}
+      {/* ROCAKAMI links (all users) */}
+      <div className="px-2 pb-1 pt-2 border-t border-white/10">
+        {!collapsed && (
+          <>
+            <a
+              href="#"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
+            >
+              <Briefcase className="w-[18px] h-[18px] shrink-0" />
+              <span>ROCAKAMI Job Board</span>
+            </a>
+            <a
+              href="https://www.rocakami.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
+            >
+              <Globe className="w-[18px] h-[18px] shrink-0" />
+              <span>ROCAKAMI Website</span>
+            </a>
+          </>
+        )}
+        {collapsed && (
+          <>
+            <a
+              href="#"
+              className="flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
+            >
+              <Briefcase className="w-[18px] h-[18px] shrink-0" />
+            </a>
+            <a
+              href="https://www.rocakami.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
+            >
+              <Globe className="w-[18px] h-[18px] shrink-0" />
+            </a>
+          </>
+        )}
+      </div>
 
       {/* Profile link (all users) */}
       <div className="px-2 pb-1 pt-2 border-t border-white/10">
