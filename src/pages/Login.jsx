@@ -44,14 +44,23 @@ export default function Login() {
           />
         </div>
         <div className="max-w-md">
-          <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4 font-heading">
-            Run the agency from one place.
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-medium text-white/90">One app. Everything connected.</span>
+          </div>
+          <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-5 font-heading">
+            Everything your team needs — one click away.
           </h1>
-          <p className="text-lg text-white/80 leading-relaxed font-body">
-            Contracts, proposals, and your internal hub — branded, fast, and built for how Rocakami works.
+          <p className="text-lg text-white/80 leading-relaxed font-body mb-6">
+            Manage projects, clients, SOPs, documents, and team operations from a single, unified portal. No more scattered tools or lost context — just one powerful workspace built for how Rocakami delivers.
           </p>
+          <div className="flex items-center gap-2 text-sm text-white/70 font-body">
+            <a href="https://www.rocakami.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
+              www.rocakami.com
+            </a>
+          </div>
         </div>
-        <p className="text-sm text-white/60">© Rocakami</p>
+        <p className="text-sm text-white/60">© {new Date().getFullYear()} Rocakami — Architects of Digital Flow</p>
       </div>
 
       {/* Right Side */}
