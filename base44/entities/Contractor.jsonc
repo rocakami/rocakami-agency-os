@@ -56,6 +56,9 @@
     },
     "folder_url": {
       "type": "string"
+    },
+    "supervisor": {
+      "type": "string"
     }
   },
   "required": [
