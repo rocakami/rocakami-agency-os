@@ -1,0 +1,19 @@
+{
+  "name": "NavCategory",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number",
+      "default": 0
+    },
+    "nav_paths": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

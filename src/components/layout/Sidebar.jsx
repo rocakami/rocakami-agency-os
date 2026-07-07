@@ -13,6 +13,7 @@ export default function Sidebar() {
   const [user, setUser] = useState(null);
   const [allowedPaths, setAllowedPaths] = useState(null); // null = all allowed
   const [permsLoaded, setPermsLoaded] = useState(false);
+  const [navCategories, setNavCategories] = useState([]);
 
   useEffect(() => {
     const load = async () => {
@@ -29,6 +30,8 @@ export default function Sidebar() {
             setAllowedPaths(null);
           }
         }
+        const cats = await base44.entities.NavCategory.list("order");
+        setNavCategories(cats);
       } catch (e) { /* default to all access on error */ }
       setPermsLoaded(true);
     };
@@ -46,6 +49,22 @@ export default function Sidebar() {
     return allowedPaths.has(item.path);
   });
 
+  // Build grouped nav: categorized items first (in category order), then uncategorized
+  const navGroups = (() => {
+    const assignedPaths = new Set();
+    const groups = navCategories.map((cat) => {
+      const paths = (cat.nav_paths || "").split(",").filter(Boolean);
+      paths.forEach((p) => assignedPaths.add(p));
+      const items = visibleItems.filter((item) => paths.includes(item.path));
+      return { category: cat, items };
+    });
+    const unassigned = visibleItems.filter((item) => !assignedPaths.has(item.path));
+    if (unassigned.length > 0) {
+      groups.push({ category: null, items: unassigned });
+    }
+    return groups;
+  })();
+
   const sidebarContent = (
     <div className={`flex flex-col h-full bg-[#1a3676] ${collapsed ? "w-[72px]" : "w-[260px]"} transition-all duration-300`}>
       {/* Logo */}
@@ -54,26 +73,43 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.path);
+      <nav className="flex-1 py-3 px-2 overflow-y-auto">
+        {visibleItems.length === 0 && !navCategories.length && (
+          <p className="px-3 py-2 text-xs text-white/40">No navigation items.</p>
+        )}
+        {navGroups.map((group, gIdx) => {
+          if (!group.items.length) return null;
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                ${active
-                  ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
-                  : "text-white/70 hover:text-white hover:bg-white/10"
-                }
-                ${collapsed ? "justify-center" : ""}
-              `}
-            >
-              <Icon className="w-[18px] h-[18px] shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+            <div key={gIdx} className="mb-3">
+              {!collapsed && group.category && (
+                <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-[#8993B4]">
+                  {group.category.name}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                        ${active
+                          ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
+                          : "text-white/70 hover:text-white hover:bg-white/10"
+                        }
+                        ${collapsed ? "justify-center" : ""}
+                      `}
+                    >
+                      <Icon className="w-[18px] h-[18px] shrink-0" />
+                      {!collapsed && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </nav>
