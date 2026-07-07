@@ -69,11 +69,11 @@ export default function SOPLibrary() {
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">{cat}</h3>
               <div className="rounded-xl border border-border overflow-hidden">
                 {items.map((sop, idx) => (
-                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`}>
-                    <span className="font-medium text-sm truncate flex-1">{sop.title}</span>
-                    <span className="text-xs text-muted-foreground hidden sm:block whitespace-nowrap w-32">{sop.owner || "Unassigned"}</span>
-                    <span className="text-xs text-muted-foreground hidden md:block whitespace-nowrap w-24">{new Date(sop.updated_date).toLocaleDateString()}</span>
-                    <StatusBadge status={sop.status} />
+                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 10rem 7rem 6.5rem" }}>
+                    <span className="font-medium text-sm truncate">{sop.title}</span>
+                    <span className="text-xs text-muted-foreground hidden sm:block truncate">{sop.owner || "Unassigned"}</span>
+                    <span className="text-xs text-muted-foreground hidden md:block">{new Date(sop.updated_date).toLocaleDateString()}</span>
+                    <div className="flex justify-end"><StatusBadge status={sop.status} /></div>
                   </Link>
                 ))}
               </div>
