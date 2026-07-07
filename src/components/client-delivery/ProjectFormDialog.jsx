@@ -32,6 +32,9 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
         setForm({ ...EMPTY, ...editing, progress: editing.progress ?? 0 });
       } else {
         setForm(EMPTY);
+        base44.functions.invoke("generateProjectId", {}).then((res) => {
+          if (res.data?.project_id) set("project_id", res.data.project_id);
+        }).catch(() => {});
       }
       base44.entities.Contractor.list().then(setContractors).catch(() => {});
     }
@@ -96,7 +99,7 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
             <h4 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">General</h4>
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="Title *" value={form.title} onChange={(e) => set("title", e.target.value)} />
-              <Input placeholder="Project ID" value={form.project_id} onChange={(e) => set("project_id", e.target.value)} />
+              <Input placeholder="Project ID" value={form.project_id} onChange={(e) => set("project_id", e.target.value)} readOnly={!editing} className={!editing ? "bg-muted/50 text-muted-foreground font-mono" : ""} />
             </div>
             <Select value={form.client_name} onValueChange={(v) => set("client_name", v)}>
               <SelectTrigger><SelectValue placeholder="Client *" /></SelectTrigger>
