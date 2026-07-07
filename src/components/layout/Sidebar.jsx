@@ -39,6 +39,14 @@ export default function Sidebar() {
     load();
   }, []);
 
+  // Auto-refresh when nav sections change in the database
+  useEffect(() => {
+    const unsubscribe = base44.entities.NavSection.subscribe(() => {
+      base44.entities.NavSection.list("order").then(setNavSections).catch(() => {});
+    });
+    return unsubscribe;
+  }, []);
+
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
