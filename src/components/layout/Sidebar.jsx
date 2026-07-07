@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, BookOpen, FolderOpen, Users, Briefcase, UserCheck,
+  LayoutDashboard, BookOpen, FolderOpen, Users, Briefcase, UserCheck, Building2,
   Wrench, GraduationCap, Megaphone, Settings, ChevronLeft, ChevronRight,
   Menu, X
 } from "lucide-react";
@@ -14,6 +14,7 @@ const navItems = [
   { label: "Documents", path: "/documents", icon: FolderOpen },
   { label: "Onboarding", path: "/onboarding", icon: Users },
   { label: "Client Delivery", path: "/client-delivery", icon: Briefcase },
+  { label: "Client Directory", path: "/clients", icon: Building2 },
   { label: "Contractors", path: "/contractors", icon: UserCheck },
   { label: "Tools Directory", path: "/tools", icon: Wrench },
   { label: "Training", path: "/training", icon: GraduationCap },

@@ -1,0 +1,49 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "primary_contact": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Prospect",
+        "Onboarding",
+        "Active",
+        "Churned"
+      ],
+      "default": "Prospect"
+    },
+    "drive_folder_url": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

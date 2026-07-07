@@ -20,6 +20,8 @@ import SOPDetail from '@/pages/SOPDetail';
 import Documents from '@/pages/Documents';
 import Onboarding from '@/pages/Onboarding';
 import ClientDelivery from '@/pages/ClientDelivery';
+import ClientDirectory from '@/pages/ClientDirectory';
+import ClientDetail from '@/pages/ClientDetail';
 import Contractors from '@/pages/Contractors';
 import ToolsDirectory from '@/pages/ToolsDirectory';
 import TrainingCenter from '@/pages/TrainingCenter';
@@ -64,6 +66,8 @@ const AuthenticatedApp = () => {
           <Route path="/documents" element={<Documents />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/client-delivery" element={<ClientDelivery />} />
+          <Route path="/clients" element={<ClientDirectory />} />
+          <Route path="/clients/:id" element={<ClientDetail />} />
           <Route path="/contractors" element={<Contractors />} />
           <Route path="/tools" element={<ToolsDirectory />} />
           <Route path="/training" element={<TrainingCenter />} />
