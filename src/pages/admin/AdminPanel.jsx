@@ -7,6 +7,7 @@ import AdminContractors from "@/components/admin/AdminContractors";
 import AdminAnnouncements from "@/components/admin/AdminAnnouncements";
 import AdminTools from "@/components/admin/AdminTools";
 import AdminTraining from "@/components/admin/AdminTraining";
+import AdminOnboarding from "@/components/admin/AdminOnboarding";
 import AdminPermissions from "@/components/admin/AdminPermissions";
 import AdminNavCategories from "@/components/admin/AdminNavCategories";
 
@@ -23,6 +24,7 @@ export default function AdminPanel() {
           <TabsTrigger value="contractors" className="text-xs">Contractors</TabsTrigger>
           <TabsTrigger value="tools" className="text-xs">Tools</TabsTrigger>
           <TabsTrigger value="training" className="text-xs">Training</TabsTrigger>
+          <TabsTrigger value="onboarding" className="text-xs">Onboarding</TabsTrigger>
           <TabsTrigger value="permissions" className="text-xs">Permissions</TabsTrigger>
           <TabsTrigger value="nav-categories" className="text-xs">Nav Categories</TabsTrigger>
         </TabsList>
@@ -33,6 +35,7 @@ export default function AdminPanel() {
         <TabsContent value="contractors"><AdminContractors /></TabsContent>
         <TabsContent value="tools"><AdminTools /></TabsContent>
         <TabsContent value="training"><AdminTraining /></TabsContent>
+        <TabsContent value="onboarding"><AdminOnboarding /></TabsContent>
         <TabsContent value="permissions"><AdminPermissions /></TabsContent>
         <TabsContent value="nav-categories"><AdminNavCategories /></TabsContent>
       </Tabs>
