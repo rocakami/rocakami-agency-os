@@ -77,14 +77,6 @@ export default function ClientDetail() {
     }
   };
 
-  const socialLinks = [
-    { url: client.linkedin_url, icon: Linkedin, label: "LinkedIn" },
-    { url: client.facebook_url, icon: Facebook, label: "Facebook" },
-    { url: client.instagram_url, icon: Instagram, label: "Instagram" },
-    { url: client.twitter_url, icon: Twitter, label: "X (Twitter)" },
-    { url: client.youtube_url, icon: Youtube, label: "YouTube" },
-  ].filter((s) => s.url);
-
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin" /></div>;
   }
@@ -92,6 +84,14 @@ export default function ClientDetail() {
   if (!client) {
     return <EmptyState icon={Building2} title="Client not found" description="This client may have been removed." />;
   }
+
+  const socialLinks = [
+    { url: client.linkedin_url, icon: Linkedin, label: "LinkedIn" },
+    { url: client.facebook_url, icon: Facebook, label: "Facebook" },
+    { url: client.instagram_url, icon: Instagram, label: "Instagram" },
+    { url: client.twitter_url, icon: Twitter, label: "X (Twitter)" },
+    { url: client.youtube_url, icon: Youtube, label: "YouTube" },
+  ].filter((s) => s.url);
 
   return (
     <div>
