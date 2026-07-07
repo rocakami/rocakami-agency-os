@@ -67,22 +67,13 @@ export default function SOPLibrary() {
           {Object.entries(grouped).map(([cat, items]) => (
             <div key={cat}>
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">{cat}</h3>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((sop) => (
-                  <Link key={sop.id} to={`/sops/${sop.id}`}>
-                    <Card className="border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer h-full">
-                      <CardContent className="py-5 px-5">
-                        <div className="flex items-start justify-between gap-2 mb-3">
-                          <h4 className="font-semibold text-sm leading-snug">{sop.title}</h4>
-                          <StatusBadge status={sop.status} />
-                        </div>
-                        {sop.purpose && <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{sop.purpose}</p>}
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                          <span>{sop.owner || "Unassigned"}</span>
-                          <span>{new Date(sop.updated_date).toLocaleDateString()}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
+              <div className="rounded-xl border border-border overflow-hidden">
+                {items.map((sop, idx) => (
+                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`}>
+                    <span className="font-medium text-sm truncate flex-1">{sop.title}</span>
+                    <span className="text-xs text-muted-foreground hidden sm:block whitespace-nowrap w-32">{sop.owner || "Unassigned"}</span>
+                    <span className="text-xs text-muted-foreground hidden md:block whitespace-nowrap w-24">{new Date(sop.updated_date).toLocaleDateString()}</span>
+                    <StatusBadge status={sop.status} />
                   </Link>
                 ))}
               </div>
