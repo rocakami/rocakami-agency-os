@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Pencil, FolderOpen, Briefcase, UserCheck,
-  Mail, Phone, Globe, MapPin, Building2
+  Mail, Phone, Globe, MapPin, Building2, Linkedin, Facebook, Instagram, Twitter, Youtube, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ export default function ClientDetail() {
   const [contractors, setContractors] = useState([]);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({});
+  const [generatingFolder, setGeneratingFolder] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -62,6 +63,28 @@ export default function ClientDetail() {
     toast({ title: "Client updated" });
   };
 
+  const generateFolder = async () => {
+    setGeneratingFolder(true);
+    try {
+      const res = await base44.functions.invoke('generateClientFolder', { client_id: id });
+      const updated = { ...client, drive_folder_url: res.data?.folder_url };
+      setClient(updated);
+      toast({ title: "Folder created", description: res.data?.folder_url });
+    } catch (err) {
+      toast({ title: "Failed to create folder", description: err.message, variant: "destructive" });
+    } finally {
+      setGeneratingFolder(false);
+    }
+  };
+
+  const socialLinks = [
+    { url: client.linkedin_url, icon: Linkedin, label: "LinkedIn" },
+    { url: client.facebook_url, icon: Facebook, label: "Facebook" },
+    { url: client.instagram_url, icon: Instagram, label: "Instagram" },
+    { url: client.twitter_url, icon: Twitter, label: "X (Twitter)" },
+    { url: client.youtube_url, icon: Youtube, label: "YouTube" },
+  ].filter((s) => s.url);
+
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin" /></div>;
   }
@@ -76,11 +99,16 @@ export default function ClientDetail() {
         <ArrowLeft className="w-4 h-4" /> Back to Clients
       </button>
 
-      <PageHeader title={client.name} description={client.company_name || "Client"}>
+      <PageHeader title={client.company_name || client.name} description={client.name && client.company_name ? `Contact: ${client.name}` : "Client"}>
         <StatusBadge status={client.status} />
-        {client.drive_folder_url && (
+        {client.drive_folder_url ? (
           <Button variant="outline" size="sm" className="gap-1" onClick={() => window.open(client.drive_folder_url, "_blank")}>
             <FolderOpen className="w-4 h-4" /> Drive Folder
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" className="gap-1" onClick={generateFolder} disabled={generatingFolder}>
+            {generatingFolder ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderOpen className="w-4 h-4" />}
+            {generatingFolder ? "Creating…" : "Generate Folder"}
           </Button>
         )}
         <Button size="sm" className="gap-1" onClick={() => { setForm(client); setEditOpen(true); }}>
@@ -140,6 +168,22 @@ export default function ClientDetail() {
                 )}
               </CardContent>
             </Card>
+
+            {socialLinks.length > 0 && (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6 space-y-4">
+                  <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Social Media</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {socialLinks.map((s) => (
+                      <a key={s.label} href={s.url.startsWith('http') ? s.url : `https://${s.url}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-muted/70 text-sm transition-colors">
+                        <s.icon className="w-4 h-4 text-[#1a3676]" />
+                        <span>{s.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {client.notes && (
               <Card className="border-0 shadow-sm sm:col-span-2">
@@ -234,7 +278,16 @@ export default function ClientDetail() {
                 <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <Input placeholder="Drive folder URL" value={form.drive_folder_url || ""} onChange={(e) => setForm({ ...form, drive_folder_url: e.target.value })} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="LinkedIn URL" value={form.linkedin_url || ""} onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })} />
+              <Input placeholder="Facebook URL" value={form.facebook_url || ""} onChange={(e) => setForm({ ...form, facebook_url: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Instagram URL" value={form.instagram_url || ""} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} />
+              <Input placeholder="X (Twitter) URL" value={form.twitter_url || ""} onChange={(e) => setForm({ ...form, twitter_url: e.target.value })} />
+            </div>
+            <Input placeholder="YouTube URL" value={form.youtube_url || ""} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} />
+            <Input placeholder="Drive folder URL (auto-generated)" value={form.drive_folder_url || ""} onChange={(e) => setForm({ ...form, drive_folder_url: e.target.value })} />
             <Textarea placeholder="Address" value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             <Textarea placeholder="Notes" value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             <Button onClick={save} className="w-full">Update</Button>
