@@ -1,24 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, ExternalLink, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatusBadge from "@/components/shared/StatusBadge";
 import ProjectFormDialog from "@/components/client-delivery/ProjectFormDialog";
 import { useToast } from "@/components/ui/use-toast";
 
 const STAGES = ["Intake", "Discovery", "Proposal", "Onboarding", "Active", "Closure"];
-
-const STAGE_COLORS = {
-  Intake: "bg-navy-600",
-  Discovery: "bg-sky-400",
-  Proposal: "bg-indigo-500",
-  Onboarding: "bg-emerald-500",
-  Active: "bg-amber-500",
-  Closure: "bg-teal-500",
-};
 
 export default function KanbanBoard() {
   const [projects, setProjects] = useState([]);
@@ -27,6 +18,8 @@ export default function KanbanBoard() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [activeStage, setActiveStage] = useState("All");
+  const [generatingId, setGeneratingId] = useState(null);
   const { toast } = useToast();
 
   const load = () => base44.entities.ClientProject.list().then(setProjects).finally(() => setLoading(false));
@@ -35,48 +28,41 @@ export default function KanbanBoard() {
     base44.entities.Client.list().then(setClients).catch(() => {});
   }, []);
 
-  const onDragEnd = async (result) => {
-    if (!result.destination) return;
-    const sourceStage = STAGES[parseInt(result.source.droppableId)];
-    const destStage = STAGES[parseInt(result.destination.droppableId)];
-    if (sourceStage === destStage) return;
-
-    const projectId = result.draggableId;
-    setProjects((prev) => prev.map((p) => (p.id === projectId ? { ...p, stage: destStage } : p)));
-    try {
-      await base44.entities.ClientProject.update(projectId, { stage: destStage });
-    } catch (e) {
-      load();
-    }
-  };
-
   const openAdd = () => { setEditing(null); setDialogOpen(true); };
-  const openEdit = (e, project) => { e.stopPropagation(); setEditing(project); setDialogOpen(true); };
+  const openEdit = (project) => { setEditing(project); setDialogOpen(true); };
 
-  const remove = async (e, project) => {
-    e.stopPropagation();
-    if (!window.confirm(`Delete "${project.title}"?`)) return;
+  const generateFolder = async (project) => {
+    setGeneratingId(project.id);
     try {
-      await base44.entities.ClientProject.delete(project.id);
-      toast({ title: "Project deleted" });
-      load();
-    } catch {
-      toast({ title: "Failed to delete", variant: "destructive" });
+      const res = await base44.functions.invoke("generateProjectFolder", { project_id: project.id });
+      const folderUrl = res.data?.folder_url;
+      if (folderUrl) {
+        setProjects((prev) => prev.map((p) => p.id === project.id ? { ...p, folder_url: folderUrl } : p));
+        toast({ title: "Folder generated" });
+      } else {
+        toast({ title: res.data?.error || "Failed to generate folder", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Failed to generate folder", variant: "destructive" });
     }
+    setGeneratingId(null);
   };
 
-  const filtered = projects.filter((p) =>
-    !search ||
-    (p.title || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.client_name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.project_id || "").toLowerCase().includes(search.toLowerCase())
-  );
-
-  const grouped = {};
-  STAGES.forEach((s) => (grouped[s] = []));
-  filtered.forEach((p) => {
-    if (grouped[p.stage]) grouped[p.stage].push(p);
+  const filtered = projects.filter((p) => {
+    const matchesStage = activeStage === "All" || p.stage === activeStage;
+    const matchesSearch = !search ||
+      (p.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.client_name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.project_id || "").toLowerCase().includes(search.toLowerCase());
+    return matchesStage && matchesSearch;
   });
+
+  const stageCounts = {
+    All: projects.length,
+    ...STAGES.reduce((acc, s) => { acc[s] = projects.filter((p) => p.stage === s).length; return acc; }, {}),
+  };
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—";
 
   if (loading) {
     return (
@@ -85,6 +71,8 @@ export default function KanbanBoard() {
       </div>
     );
   }
+
+  const FILTERS = ["All", ...STAGES];
 
   return (
     <div>
@@ -96,77 +84,92 @@ export default function KanbanBoard() {
         <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" />Add Project</Button>
       </div>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]">
-          {STAGES.map((stage, stageIdx) => (
-            <Droppable droppableId={stageIdx.toString()} key={stage}>
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`flex-shrink-0 w-72 rounded-xl bg-muted/40 p-3 transition-colors ${snapshot.isDraggingOver ? "bg-sky-50 ring-2 ring-sky-200" : ""}`}
-                >
-                  <div className="flex items-center gap-2 mb-3 px-1">
-                    <div className={`w-2.5 h-2.5 rounded-full ${STAGE_COLORS[stage]}`} />
-                    <h3 className="font-semibold text-sm">{stage}</h3>
-                    <span className="text-xs text-muted-foreground ml-auto bg-white px-2 py-0.5 rounded-full">
-                      {grouped[stage].length}
-                    </span>
-                  </div>
-                  <div className="space-y-2 min-h-[100px]">
-                    {grouped[stage].map((p, index) => (
-                      <Draggable draggableId={p.id} index={index} key={p.id}>
-                        {(prov, snap) => (
-                          <div
-                            ref={prov.innerRef}
-                            {...prov.draggableProps}
-                            {...prov.dragHandleProps}
-                            className={`bg-white rounded-lg shadow-sm border border-border p-3 cursor-grab active:cursor-grabbing ${snap.isDragging ? "shadow-lg ring-2 ring-sky-400 rotate-1" : ""}`}
-                          >
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <Link to={`/projects/${p.id}`} className="font-semibold text-sm leading-snug hover:text-primary">
-                                {p.title}
-                              </Link>
-                              <div className="flex items-center gap-1 flex-shrink-0">
-                                <button onClick={(e) => openEdit(e, p)} className="p-0.5 text-muted-foreground hover:text-primary transition-colors">
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button onClick={(e) => remove(e, p)} className="p-0.5 text-muted-foreground hover:text-destructive transition-colors">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 mb-2">
-                              {p.project_id && <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded">{p.project_id}</span>}
-                              <StatusBadge status={p.priority} />
-                            </div>
-                            <p className="text-xs text-sky-600 font-medium mb-2">{p.client_name}</p>
-                            {p.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{p.description}</p>
-                            )}
-                            {p.progress != null && p.progress > 0 && (
-                              <div className="mb-2">
-                                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                                  <div className="h-full bg-sky-500 rounded-full" style={{ width: `${p.progress}%` }} />
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                              <span>{p.assigned_to || "Unassigned"}</span>
-                              {p.due_date && <span>{new Date(p.due_date).toLocaleDateString()}</span>}
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                </div>
+      {/* Stage filter bar */}
+      <div className="border-b mb-0">
+        <div className="flex items-center gap-1 overflow-x-auto">
+          {FILTERS.map((stage) => (
+            <button
+              key={stage}
+              onClick={() => setActiveStage(stage)}
+              className={`relative px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                activeStage === stage
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {stage}
+              <span className="ml-1.5 text-xs text-muted-foreground">({stageCounts[stage] || 0})</span>
+              {activeStage === stage && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 rounded-full" />
               )}
-            </Droppable>
+            </button>
           ))}
         </div>
-      </DragDropContext>
+      </div>
+
+      {/* Table */}
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead className="w-[120px]">Project ID</TableHead>
+              <TableHead>Project Title</TableHead>
+              <TableHead className="w-[130px]">Start Date</TableHead>
+              <TableHead className="w-[130px]">Due Date</TableHead>
+              <TableHead className="w-[100px]">Stage</TableHead>
+              <TableHead className="w-[120px]">Folder</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  No projects found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filtered.map((p) => (
+                <TableRow key={p.id} className="cursor-pointer hover:bg-muted/30" onClick={() => openEdit(p)}>
+                  <TableCell className="font-mono text-xs">{p.project_id || "—"}</TableCell>
+                  <TableCell>
+                    <Link to={`/projects/${p.id}`} onClick={(e) => e.stopPropagation()} className="font-medium text-sm hover:text-sky-600">
+                      {p.title}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">{p.client_name} • {p.project_type || "—"}</p>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{fmtDate(p.start_date)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{fmtDate(p.due_date)}</TableCell>
+                  <TableCell><StatusBadge status={p.stage} /></TableCell>
+                  <TableCell>
+                    {p.folder_url ? (
+                      <a
+                        href={p.folder_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-xs text-sky-600 hover:underline"
+                      >
+                        <ExternalLink className="w-3 h-3" /> Open
+                      </a>
+                    ) : generatingId === p.id ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Generating…
+                      </span>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); generateFolder(p); }}
+                        className="text-xs text-sky-600 font-medium hover:underline"
+                      >
+                        Generate
+                      </button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <ProjectFormDialog open={dialogOpen} onOpenChange={setDialogOpen} editing={editing} clients={clients} onSaved={load} />
     </div>
