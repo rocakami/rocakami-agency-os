@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { ExternalLink, Globe } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
 import AdminSOPs from "@/components/admin/AdminSOPs";
 import AdminDocuments from "@/components/admin/AdminDocuments";
@@ -15,13 +13,6 @@ import AdminNavCategories from "@/components/admin/AdminNavCategories";
 export default function AdminPanel() {
   return (
     <div>
-      <div className="flex justify-end mb-4">
-        <Button asChild variant="outline" size="sm" className="gap-2">
-          <a href="https://www.rocakami.com/" target="_blank" rel="noopener noreferrer">
-            <Globe className="w-4 h-4" /> ROCAKAMI Website <ExternalLink className="w-3 h-3" />
-          </a>
-        </Button>
-      </div>
       <PageHeader title="Admin Panel" description="Manage content, staff, and settings" />
 
       <Tabs defaultValue="sops" className="w-full">
