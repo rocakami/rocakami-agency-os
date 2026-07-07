@@ -6,9 +6,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Generate project ID: RK-YY####
-    const year = String(new Date().getFullYear()).slice(2);
-    const prefix = `RK-${year}`;
+    // Generate project ID: RK####
+    const prefix = 'RK';
     const existing = await base44.asServiceRole.entities.ClientProject.list('-created_date', 500);
     let maxSeq = 0;
     existing.forEach((p) => {
