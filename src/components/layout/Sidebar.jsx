@@ -15,6 +15,7 @@ export default function Sidebar() {
   const [allowedPaths, setAllowedPaths] = useState(null); // null = all allowed
   const [permsLoaded, setPermsLoaded] = useState(false);
   const [navSections, setNavSections] = useState([]);
+  const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -33,10 +34,32 @@ export default function Sidebar() {
         }
         const secs = await base44.entities.NavSection.list("order");
         setNavSections(secs);
+
+        // Count unread announcements (newer than last viewed timestamp)
+        const lastViewed = localStorage.getItem("announcements_last_viewed");
+        const announcements = await base44.entities.Announcement.list("-created_date", 50);
+        const unread = lastViewed
+          ? announcements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
+          : announcements.length;
+        setUnreadAnnouncements(unread);
       } catch (e) { /* default to all access on error */ }
       setPermsLoaded(true);
     };
     load();
+  }, []);
+
+  // Subscribe to announcement changes to update unread count in real-time
+  useEffect(() => {
+    const unsubscribe = base44.entities.Announcement.subscribe(() => {
+      const lastViewed = localStorage.getItem("announcements_last_viewed");
+      base44.entities.Announcement.list("-created_date", 50).then((announcements) => {
+        const unread = lastViewed
+          ? announcements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
+          : announcements.length;
+        setUnreadAnnouncements(unread);
+      });
+    });
+    return unsubscribe;
   }, []);
 
   // Auto-refresh when nav sections change in the database
@@ -116,7 +139,13 @@ export default function Sidebar() {
                     <Link
                       key={item.path}
                       to={item.path}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => {
+                        if (item.path === "/announcements") {
+                          localStorage.setItem("announcements_last_viewed", new Date().toISOString());
+                          setUnreadAnnouncements(0);
+                        }
+                        setMobileOpen(false);
+                      }}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                         ${active
                           ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
@@ -127,6 +156,11 @@ export default function Sidebar() {
                     >
                       <Icon className="w-[18px] h-[18px] shrink-0" />
                       {!collapsed && <span>{item.label}</span>}
+                      {item.path === "/announcements" && unreadAnnouncements > 0 && (
+                        <span className={`${collapsed ? "absolute top-1 right-1" : "ml-auto"} flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-red-500 text-white`}>
+                          {unreadAnnouncements > 9 ? "9+" : unreadAnnouncements}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}

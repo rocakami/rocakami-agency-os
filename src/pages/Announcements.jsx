@@ -13,7 +13,10 @@ export default function Announcements() {
   const [catFilter, setCatFilter] = useState("All");
 
   useEffect(() => {
-    base44.entities.Announcement.list("-created_date").then(setAnnouncements).finally(() => setLoading(false));
+    base44.entities.Announcement.list("-created_date").then((data) => {
+      setAnnouncements(data);
+      localStorage.setItem("announcements_last_viewed", new Date().toISOString());
+    }).finally(() => setLoading(false));
   }, []);
 
   const filtered = announcements.filter((a) => catFilter === "All" || a.category === catFilter);
