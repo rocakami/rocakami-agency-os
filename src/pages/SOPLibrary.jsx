@@ -69,11 +69,17 @@ export default function SOPLibrary() {
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">{cat}</h3>
               <div className="rounded-xl border border-border overflow-hidden">
                 {items.map((sop, idx) => (
-                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 10rem 7rem 6.5rem" }}>
+                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 7rem 7rem 6rem 7rem" }}>
                     <span className="font-medium text-sm truncate">{sop.title}</span>
-                    <span className="text-xs text-muted-foreground hidden sm:block truncate">{sop.owner || "Unassigned"}</span>
+                    <div><StatusBadge status={sop.status} /></div>
                     <span className="text-xs text-muted-foreground hidden md:block">{new Date(sop.updated_date).toLocaleDateString()}</span>
-                    <div className="flex justify-end"><StatusBadge status={sop.status} /></div>
+                    <span className="hidden sm:block">
+                      {sop.google_doc_url
+                        ? <a href={sop.google_doc_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-sky-600 hover:underline font-medium">Here</a>
+                        : <span className="text-xs text-muted-foreground/50">—</span>
+                      }
+                    </span>
+                    <span className="text-xs text-muted-foreground hidden sm:block truncate">{sop.owner || "Unassigned"}</span>
                   </Link>
                 ))}
               </div>
