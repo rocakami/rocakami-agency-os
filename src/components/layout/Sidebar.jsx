@@ -1,36 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard, BookOpen, FolderOpen, Users, Briefcase, UserCheck, Building2,
-  Wrench, GraduationCap, Megaphone, Settings, ChevronLeft, ChevronRight,
-  Menu, X
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { navItems } from "@/lib/nav-items";
 
 const LOGO_URL = "https://media.base44.com/images/public/user_69df64cf7abf40c43ccdfbbf/e818e8d37_ROCAKAMILOGO.jpg";
-
-const navItems = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard },
-  { label: "SOP Library", path: "/sops", icon: BookOpen },
-  { label: "Documents", path: "/documents", icon: FolderOpen },
-  { label: "Onboarding", path: "/onboarding", icon: Users },
-  { label: "Client Delivery", path: "/client-delivery", icon: Briefcase },
-  { label: "Client Directory", path: "/clients", icon: Building2 },
-  { label: "Contractors", path: "/contractors", icon: UserCheck },
-  { label: "Tools Directory", path: "/tools", icon: Wrench },
-  { label: "Training", path: "/training", icon: GraduationCap },
-  { label: "Announcements", path: "/announcements", icon: Megaphone },
-  { label: "Admin", path: "/admin", icon: Settings },
-];
 
 export default function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [allowedPaths, setAllowedPaths] = useState(null); // null = all allowed
+  const [permsLoaded, setPermsLoaded] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const me = await base44.auth.me();
+        setUser(me);
+        if (me.role === "admin") {
+          setAllowedPaths(null);
+        } else {
+          const perms = await base44.entities.NavPermission.filter({ user_id: me.id });
+          if (perms.length > 0 && perms[0].allowed_paths) {
+            setAllowedPaths(new Set(perms[0].allowed_paths.split(",").filter(Boolean)));
+          } else {
+            setAllowedPaths(null);
+          }
+        }
+      } catch (e) { /* default to all access on error */ }
+      setPermsLoaded(true);
+    };
+    load();
+  }, []);
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
+
+  const visibleItems = navItems.filter((item) => {
+    if (item.path === "/") return true; // Dashboard always visible
+    if (!allowedPaths) return true; // null = full access
+    return allowedPaths.has(item.path);
+  });
 
   const sidebarContent = (
     <div className={`flex flex-col h-full bg-[#1a3676] ${collapsed ? "w-[72px]" : "w-[260px]"} transition-all duration-300`}>
@@ -47,7 +61,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
           return (
@@ -79,6 +93,16 @@ export default function Sidebar() {
       </button>
     </div>
   );
+
+  if (!permsLoaded) {
+    return (
+      <div className="hidden lg:block w-[260px] shrink-0 bg-[#1a3676]">
+        <div className="flex items-center justify-center h-full">
+          <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

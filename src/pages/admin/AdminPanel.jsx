@@ -7,6 +7,7 @@ import AdminContractors from "@/components/admin/AdminContractors";
 import AdminAnnouncements from "@/components/admin/AdminAnnouncements";
 import AdminTools from "@/components/admin/AdminTools";
 import AdminTraining from "@/components/admin/AdminTraining";
+import AdminPermissions from "@/components/admin/AdminPermissions";
 
 export default function AdminPanel() {
   return (
@@ -21,6 +22,7 @@ export default function AdminPanel() {
           <TabsTrigger value="contractors" className="text-xs">Contractors</TabsTrigger>
           <TabsTrigger value="tools" className="text-xs">Tools</TabsTrigger>
           <TabsTrigger value="training" className="text-xs">Training</TabsTrigger>
+          <TabsTrigger value="permissions" className="text-xs">Permissions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sops"><AdminSOPs /></TabsContent>
@@ -29,6 +31,7 @@ export default function AdminPanel() {
         <TabsContent value="contractors"><AdminContractors /></TabsContent>
         <TabsContent value="tools"><AdminTools /></TabsContent>
         <TabsContent value="training"><AdminTraining /></TabsContent>
+        <TabsContent value="permissions"><AdminPermissions /></TabsContent>
       </Tabs>
     </div>
   );
