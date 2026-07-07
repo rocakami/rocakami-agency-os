@@ -1,7 +1,9 @@
 import React from "react";
 import { PhoneCall, Search, FileText, UserPlus, Rocket, BarChart3, MessageCircle, CheckCircle, LogOut } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
+import KanbanBoard from "@/components/client-delivery/KanbanBoard";
 
 const workflows = [
   { icon: UserPlus, title: "New Client Intake", description: "Initial client information gathering, contract signing, and system setup. Complete the intake form, verify payment details, and create client folders.", step: 1, color: "bg-navy-600" },
@@ -18,33 +20,46 @@ const workflows = [
 export default function ClientDelivery() {
   return (
     <div>
-      <PageHeader title="Client Delivery Hub" description="Internal workflows from intake to project closure" />
+      <PageHeader title="Client Delivery Hub" description="Track client projects and workflows from intake to closure" />
 
-      <div className="relative">
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border hidden sm:block" />
-        <div className="space-y-5">
-          {workflows.map((w) => {
-            const Icon = w.icon;
-            return (
-              <div key={w.step} className="relative sm:pl-16">
-                <div className={`hidden sm:flex absolute left-0 w-12 h-12 rounded-xl ${w.color} text-white items-center justify-center font-bold text-lg z-10`}>
-                  {w.step}
-                </div>
-                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                  <CardContent className="py-5 px-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className={`sm:hidden w-8 h-8 rounded-lg ${w.color} text-white flex items-center justify-center text-sm font-bold`}>{w.step}</div>
-                      <Icon className="w-5 h-5 text-muted-foreground hidden sm:block" />
-                      <h3 className="font-bold text-base">{w.title}</h3>
+      <Tabs defaultValue="kanban" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="kanban">Kanban Board</TabsTrigger>
+          <TabsTrigger value="workflow">Workflow Guide</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="kanban">
+          <KanbanBoard />
+        </TabsContent>
+
+        <TabsContent value="workflow">
+          <div className="relative">
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border hidden sm:block" />
+            <div className="space-y-5">
+              {workflows.map((w) => {
+                const Icon = w.icon;
+                return (
+                  <div key={w.step} className="relative sm:pl-16">
+                    <div className={`hidden sm:flex absolute left-0 w-12 h-12 rounded-xl ${w.color} text-white items-center justify-center font-bold text-lg z-10`}>
+                      {w.step}
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed sm:ml-8">{w.description}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+                    <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                      <CardContent className="py-5 px-6">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className={`sm:hidden w-8 h-8 rounded-lg ${w.color} text-white flex items-center justify-center text-sm font-bold`}>{w.step}</div>
+                          <Icon className="w-5 h-5 text-muted-foreground hidden sm:block" />
+                          <h3 className="font-bold text-base">{w.title}</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed sm:ml-8">{w.description}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
