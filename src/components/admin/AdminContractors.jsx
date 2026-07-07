@@ -15,14 +15,14 @@ export default function AdminContractors() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", role: "", email: "", rate: "", assigned_clients: "", payment_status: "Pending", contract_status: "Active", performance_notes: "", start_date: "" });
+  const [form, setForm] = useState({ name: "", role: "", email: "", rate: "", assigned_clients: "", payment_status: "Pending", contract_status: "Active", performance_notes: "", start_date: "", employee_id: "", folder_url: "" });
   const { toast } = useToast();
 
   const load = () => base44.entities.Contractor.list("-created_date").then(setItems).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm({ name: "", role: "", email: "", rate: "", assigned_clients: "", payment_status: "Pending", contract_status: "Active", performance_notes: "", start_date: "" }); setDialogOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, role: c.role, email: c.email || "", rate: c.rate || "", assigned_clients: c.assigned_clients || "", payment_status: c.payment_status || "Pending", contract_status: c.contract_status || "Active", performance_notes: c.performance_notes || "", start_date: c.start_date || "" }); setDialogOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ name: "", role: "", email: "", rate: "", assigned_clients: "", payment_status: "Pending", contract_status: "Active", performance_notes: "", start_date: "", employee_id: "", folder_url: "" }); setDialogOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, role: c.role, email: c.email || "", rate: c.rate || "", assigned_clients: c.assigned_clients || "", payment_status: c.payment_status || "Pending", contract_status: c.contract_status || "Active", performance_notes: c.performance_notes || "", start_date: c.start_date || "", employee_id: c.employee_id || "", folder_url: c.folder_url || "" }); setDialogOpen(true); };
 
   const save = async () => {
     if (!form.name || !form.role) return;
@@ -87,6 +87,10 @@ export default function AdminContractors() {
               </Select>
             </div>
             <Input type="date" placeholder="Start date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Employee ID (e.g. RK-001)" value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })} />
+              <Input placeholder="Personal folder URL" value={form.folder_url} onChange={(e) => setForm({ ...form, folder_url: e.target.value })} />
+            </div>
             <Textarea placeholder="Performance notes" value={form.performance_notes} onChange={(e) => setForm({ ...form, performance_notes: e.target.value })} />
             <Button onClick={save} className="w-full">{editing ? "Update" : "Add"}</Button>
           </div>

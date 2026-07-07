@@ -68,8 +68,15 @@ export default function SOPLibrary() {
             <div key={cat}>
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">{cat}</h3>
               <div className="rounded-xl border border-border overflow-hidden">
+                <div className="grid items-center gap-4 px-4 py-2.5 bg-muted/50 border-b border-border" style={{ gridTemplateColumns: "1fr 6rem 7.5rem 5rem 9rem" }}>
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Title</span>
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Status</span>
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden md:block">Last Updated</span>
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:block">Link</span>
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:block">Owner</span>
+                </div>
                 {items.map((sop, idx) => (
-                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 7rem 7rem 6rem 7rem" }}>
+                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 6rem 7.5rem 5rem 9rem" }}>
                     <span className="font-medium text-sm truncate">{sop.title}</span>
                     <div><StatusBadge status={sop.status} /></div>
                     <span className="text-xs text-muted-foreground hidden md:block">{new Date(sop.updated_date).toLocaleDateString()}</span>
@@ -79,7 +86,7 @@ export default function SOPLibrary() {
                         : <span className="text-xs text-muted-foreground/50">—</span>
                       }
                     </span>
-                    <span className="text-xs text-muted-foreground hidden sm:block truncate">{sop.owner || "Unassigned"}</span>
+                    <span className="text-xs text-muted-foreground hidden sm:block break-words">{sop.owner || "Unassigned"}</span>
                   </Link>
                 ))}
               </div>

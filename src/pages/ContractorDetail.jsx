@@ -3,25 +3,41 @@ import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Loader2, ArrowLeft, Mail, Phone, MapPin, Calendar,
-  DollarSign, Users, FileText, AlertTriangle, FolderOpen
+  DollarSign, Users, FileText, AlertTriangle, FolderOpen,
+  Shield, Save, Badge, Link as LinkIcon
 } from "lucide-react";
 
 export default function ContractorDetail() {
   const { id } = useParams();
+  const { toast } = useToast();
   const [contractor, setContractor] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminForm, setAdminForm] = useState({ employee_id: "", folder_url: "", start_date: "" });
+  const [savingAdmin, setSavingAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const c = await base44.entities.Contractor.get(id);
+        const [me, c] = await Promise.all([
+          base44.auth.me(),
+          base44.entities.Contractor.get(id)
+        ]);
+        setIsAdmin(me.role === "admin");
         setContractor(c);
+        setAdminForm({
+          employee_id: c.employee_id || "",
+          folder_url: c.folder_url || "",
+          start_date: c.start_date || ""
+        });
         const allProjects = await base44.entities.ClientProject.list();
         const matched = allProjects.filter((p) =>
           p.assigned_to && c.name && p.assigned_to.toLowerCase().includes(c.name.toLowerCase())
@@ -31,6 +47,18 @@ export default function ContractorDetail() {
       setLoading(false);
     })();
   }, [id]);
+
+  const saveAdmin = async () => {
+    setSavingAdmin(true);
+    try {
+      const updated = await base44.entities.Contractor.update(contractor.id, adminForm);
+      setContractor(updated);
+      toast({ title: "Admin fields saved" });
+    } catch (e) {
+      toast({ title: "Error saving", variant: "destructive" });
+    }
+    setSavingAdmin(false);
+  };
 
   if (loading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>;
@@ -47,7 +75,9 @@ export default function ContractorDetail() {
     { icon: AlertTriangle, label: "Emergency Contact", value: contractor.emergency_contact },
     { icon: DollarSign, label: "Rate", value: contractor.rate },
     { icon: Users, label: "Assigned Clients", value: contractor.assigned_clients },
-    { icon: Calendar, label: "Start Date", value: contractor.start_date ? new Date(contractor.start_date).toLocaleDateString() : null }
+    { icon: Calendar, label: "Start Date", value: contractor.start_date ? new Date(contractor.start_date).toLocaleDateString() : null },
+    { icon: Badge, label: "Employee ID", value: contractor.employee_id },
+    { icon: LinkIcon, label: "Personal Folder", value: contractor.folder_url, isLink: true }
   ].filter((d) => d.value);
 
   return (
@@ -71,9 +101,13 @@ export default function ContractorDetail() {
                     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <Icon className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{d.label}</p>
-                      <p className="text-sm font-medium">{d.value}</p>
+                      {d.isLink ? (
+                        <a href={d.value} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-sky-600 hover:underline break-all">{d.value}</a>
+                      ) : (
+                        <p className="text-sm font-medium break-words">{d.value}</p>
+                      )}
                     </div>
                   </div>
                 );
@@ -141,6 +175,36 @@ export default function ContractorDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Admin-only section */}
+      {isAdmin && (
+        <Card className="border-0 shadow-sm mt-5">
+          <CardContent className="py-6 px-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold text-sm text-primary uppercase tracking-wide">Admin Settings</h3>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Employee ID Number</label>
+                <Input value={adminForm.employee_id} onChange={(e) => setAdminForm({ ...adminForm, employee_id: e.target.value })} placeholder="e.g. RK-001" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Personal Folder Link</label>
+                <Input value={adminForm.folder_url} onChange={(e) => setAdminForm({ ...adminForm, folder_url: e.target.value })} placeholder="https://drive.google.com/…" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Start Date</label>
+                <Input type="date" value={adminForm.start_date} onChange={(e) => setAdminForm({ ...adminForm, start_date: e.target.value })} />
+              </div>
+            </div>
+            <Button onClick={saveAdmin} disabled={savingAdmin} className="gap-2 mt-4">
+              {savingAdmin ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Admin Settings
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

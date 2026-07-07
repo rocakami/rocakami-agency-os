@@ -1,8 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import Sidebar from "./Sidebar";
 
 export default function AppLayout() {
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me?.email) return;
+        const matches = await base44.entities.Contractor.filter({ email: me.email });
+        if (matches.length === 0) {
+          await base44.entities.Contractor.create({
+            name: me.full_name || me.email,
+            role: "",
+            email: me.email
+          });
+        }
+      } catch (e) { /* non-critical */ }
+    })();
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />

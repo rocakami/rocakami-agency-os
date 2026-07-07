@@ -50,6 +50,12 @@
     "start_date": {
       "type": "string",
       "format": "date"
+    },
+    "employee_id": {
+      "type": "string"
+    },
+    "folder_url": {
+      "type": "string"
     }
   },
   "required": [
