@@ -71,7 +71,7 @@ export default function Sidebar() {
       <div className="px-4 py-5 border-b border-white/10 flex flex-col items-center gap-1.5">
         <img src={LOGO_URL} alt="RocaKami — Architects of Digital Flow" className={`object-contain rounded-2xl ${collapsed ? "w-10 h-10" : "w-full h-auto"}`} />
         {!collapsed && (
-          <span className="text-sky-300 text-[10px] font-semibold tracking-[0.25em] uppercase">Agency OS</span>
+          <span className="text-sky-300 text-sm font-semibold tracking-[0.25em] uppercase">Agency OS</span>
         )}
       </div>
 
