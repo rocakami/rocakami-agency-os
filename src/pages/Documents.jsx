@@ -49,32 +49,27 @@ export default function Documents() {
       {filtered.length === 0 ? (
         <EmptyState icon={FolderOpen} title="No documents found" description="Upload documents from the Admin panel." />
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((doc) => (
-            <Card key={doc.id} className="border-0 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
-              <CardContent className="py-5 px-5 flex flex-col h-full">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-semibold text-sm leading-snug">{doc.title}</h3>
-                  <StatusBadge status={doc.status} />
-                </div>
-                <span className="text-[11px] text-sky-600 font-medium mb-2">{doc.category}</span>
-                {doc.description && <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{doc.description}</p>}
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="text-[11px] text-muted-foreground">
-                    <span>{doc.owner || "—"}</span>
-                    <span className="mx-1">·</span>
-                    <span>{new Date(doc.updated_date).toLocaleDateString()}</span>
-                  </div>
-                  {doc.file_url && (
-                    <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-                        <Eye className="w-3.5 h-3.5" /> View
-                      </Button>
-                    </a>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="grid items-center gap-4 px-4 py-2.5 bg-muted/50 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider" style={{ gridTemplateColumns: "1fr 7rem 7rem 6rem 7rem" }}>
+            <span>Title</span>
+            <span>Status</span>
+            <span className="hidden md:block">Last Updated</span>
+            <span className="hidden sm:block">Link</span>
+            <span className="hidden sm:block">Owner</span>
+          </div>
+          {filtered.map((doc, idx) => (
+            <div key={doc.id} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== filtered.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 7rem 7rem 6rem 7rem" }}>
+              <span className="font-medium text-sm truncate">{doc.title}</span>
+              <div><StatusBadge status={doc.status} /></div>
+              <span className="text-xs text-muted-foreground hidden md:block">{new Date(doc.updated_date).toLocaleDateString()}</span>
+              <span className="hidden sm:block">
+                {doc.file_url
+                  ? <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-sky-600 hover:underline font-medium">Here</a>
+                  : <span className="text-xs text-muted-foreground/50">—</span>
+                }
+              </span>
+              <span className="text-xs text-muted-foreground hidden sm:block truncate">{doc.owner || "—"}</span>
+            </div>
           ))}
         </div>
       )}
