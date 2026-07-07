@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Menu, X, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
+import { getNavIcon as getIcon } from "@/lib/nav-icons";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2ba9e7065_image.png";
 
@@ -13,7 +14,7 @@ export default function Sidebar() {
   const [user, setUser] = useState(null);
   const [allowedPaths, setAllowedPaths] = useState(null); // null = all allowed
   const [permsLoaded, setPermsLoaded] = useState(false);
-  const [navCategories, setNavCategories] = useState([]);
+  const [navSections, setNavSections] = useState([]);
 
   useEffect(() => {
     const load = async () => {
@@ -30,8 +31,8 @@ export default function Sidebar() {
             setAllowedPaths(null);
           }
         }
-        const cats = await base44.entities.NavCategory.list("order");
-        setNavCategories(cats);
+        const secs = await base44.entities.NavSection.list("order");
+        setNavSections(secs);
       } catch (e) { /* default to all access on error */ }
       setPermsLoaded(true);
     };
@@ -43,22 +44,32 @@ export default function Sidebar() {
     return location.pathname.startsWith(path);
   };
 
-  const visibleItems = navItems.filter((item) => {
+  // Use DB sections if available, otherwise fall back to hardcoded navItems
+  const sourceItems = navSections.length > 0
+    ? navSections.map((s) => ({ ...s, icon: getIcon(s.icon) }))
+    : navItems;
+
+  const visibleItems = sourceItems.filter((item) => {
     if (item.path === "/") return true; // Dashboard always visible
     if (!allowedPaths) return true; // null = full access
     return allowedPaths.has(item.path);
   });
 
-  // Build grouped nav: categorized items first (in category order), then uncategorized
+  // Build grouped nav: by category_name, preserving DB order
   const navGroups = (() => {
-    const assignedPaths = new Set();
-    const groups = navCategories.map((cat) => {
-      const paths = (cat.nav_paths || "").split(",").filter(Boolean);
-      paths.forEach((p) => assignedPaths.add(p));
-      const items = visibleItems.filter((item) => paths.includes(item.path));
-      return { category: cat, items };
-    });
-    const unassigned = visibleItems.filter((item) => !assignedPaths.has(item.path));
+    const groups = [];
+    const seenCats = new Set();
+    for (const item of visibleItems) {
+      const catName = item.category_name || "";
+      if (!catName) continue;
+      if (!seenCats.has(catName)) {
+        seenCats.add(catName);
+        groups.push({ category: { name: catName }, items: [] });
+      }
+      groups[groups.length - 1].items.push(item);
+    }
+    // Add uncategorized items
+    const unassigned = visibleItems.filter((item) => !item.category_name);
     if (unassigned.length > 0) {
       groups.push({ category: null, items: unassigned });
     }
@@ -77,7 +88,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 overflow-y-auto">
-        {visibleItems.length === 0 && !navCategories.length && (
+        {visibleItems.length === 0 && (
           <p className="px-3 py-2 text-xs text-white/40">No navigation items.</p>
         )}
         {navGroups.map((group, gIdx) => {

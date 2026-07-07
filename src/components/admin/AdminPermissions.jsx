@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { navItems } from "@/lib/nav-items";
+import { getNavIcon } from "@/lib/nav-icons";
 
 export default function AdminPermissions() {
   const [users, setUsers] = useState([]);
@@ -14,14 +15,16 @@ export default function AdminPermissions() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [allNavItems, setAllNavItems] = useState(navItems);
   const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [userList, permList] = await Promise.all([
+        const [userList, permList, navSecs] = await Promise.all([
           base44.entities.User.list("-created_date"),
           base44.entities.NavPermission.list("-created_date"),
+          base44.entities.NavSection.list("order"),
         ]);
         const nonAdmins = userList.filter((u) => u.role !== "admin");
         setUsers(nonAdmins);
@@ -29,6 +32,9 @@ export default function AdminPermissions() {
         permList.forEach((p) => { permMap[p.user_id] = p; });
         setPermissions(permMap);
         if (nonAdmins.length > 0) setSelectedUserId(nonAdmins[0].id);
+        if (navSecs.length > 0) {
+          setAllNavItems(navSecs.map((s) => ({ ...s, icon: getNavIcon(s.icon) })));
+        }
       } catch (e) { console.error(e); }
       setLoading(false);
     };
@@ -43,7 +49,7 @@ export default function AdminPermissions() {
 
   const togglePath = (path) => {
     if (!selectedUserId) return;
-    const current = allowedSet ? new Set(allowedSet) : new Set(navItems.map((n) => n.path));
+    const current = allowedSet ? new Set(allowedSet) : new Set(allNavItems.map((n) => n.path));
     if (current.has(path)) current.delete(path);
     else current.add(path);
     setPermissions({
@@ -57,7 +63,7 @@ export default function AdminPermissions() {
 
   const setAll = (on) => {
     if (!selectedUserId) return;
-    const paths = on ? navItems.map((n) => n.path).join(",") : "";
+    const paths = on ? allNavItems.map((n) => n.path).join(",") : "";
     setPermissions({
       ...permissions,
       [selectedUserId]: {
@@ -154,7 +160,7 @@ export default function AdminPermissions() {
                 </div>
 
                 <div className="space-y-1">
-                  {navItems.map((item) => {
+                  {allNavItems.map((item) => {
                     const Icon = item.icon;
                     const checked = allowedSet ? allowedSet.has(item.path) : true;
                     return (

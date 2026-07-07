@@ -1,51 +1,52 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Trash2, Save, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, GripVertical, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { navItems } from "@/lib/nav-items";
+import { ICON_OPTIONS } from "@/lib/nav-icons";
 
 export default function AdminNavCategories() {
   const [categories, setCategories] = useState([]);
+  const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editSection, setEditSection] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    base44.entities.NavCategory.list("order")
-      .then(setCategories)
+    Promise.all([
+      base44.entities.NavCategory.list("order"),
+      base44.entities.NavSection.list("order")
+    ])
+      .then(([cats, secs]) => {
+        setCategories(cats);
+        if (secs.length > 0) setSections(secs);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const assignedPaths = new Set(categories.flatMap((c) => (c.nav_paths || "").split(",").filter(Boolean)));
-  const unassigned = navItems.filter((n) => !assignedPaths.has(n.path));
-
+  // --- Category management ---
   const addCategory = () => {
     setCategories([...categories, { name: "", order: categories.length, nav_paths: "", _new: true }]);
   };
-
   const updateCategory = (idx, field, value) => {
     const next = [...categories];
     next[idx] = { ...next[idx], [field]: value };
     setCategories(next);
   };
-
-  const togglePath = (idx, path) => {
-    const cat = categories[idx];
-    const current = new Set((cat.nav_paths || "").split(",").filter(Boolean));
-    if (current.has(path)) current.delete(path);
-    else current.add(path);
-    updateCategory(idx, "nav_paths", Array.from(current).join(","));
-  };
-
   const removeCategory = (idx) => {
+    const catName = categories[idx].name;
+    // Unassign sections from this category
+    setSections(sections.map((s) => s.category_name === catName ? { ...s, category_name: "" } : s));
     setCategories(categories.filter((_, i) => i !== idx));
   };
-
   const moveCategory = (idx, dir) => {
     const target = idx + dir;
     if (target < 0 || target >= categories.length) return;
@@ -55,28 +56,83 @@ export default function AdminNavCategories() {
     setCategories(next);
   };
 
+  // --- Section management ---
+  const addSection = () => {
+    setEditSection({ label: "", path: "", icon: "LayoutDashboard", category_name: "", order: sections.length, _isNew: true });
+  };
+  const saveSection = () => {
+    if (!editSection.label.trim() || !editSection.path.trim()) {
+      toast({ title: "Label and path are required", variant: "destructive" });
+      return;
+    }
+    if (editSection._isNew) {
+      setSections([...sections, { ...editSection, _isNew: false }]);
+    } else {
+      setSections(sections.map((s) => s._editKey === editSection._editKey ? editSection : s));
+    }
+    setEditSection(null);
+  };
+  const editExistingSection = (idx) => {
+    setEditSection({ ...sections[idx], _editKey: idx, _isNew: false });
+  };
+  const removeSection = (idx) => {
+    setSections(sections.filter((_, i) => i !== idx));
+  };
+  const moveSection = (idx, dir) => {
+    const target = idx + dir;
+    if (target < 0 || target >= sections.length) return;
+    const next = [...sections];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    next.forEach((s, i) => (s.order = i));
+    setSections(next);
+  };
+
+  // --- Save all to DB ---
   const save = async () => {
     setSaving(true);
     try {
-      const existingIds = new Set(categories.filter((c) => c.id).map((c) => c.id));
-      const all = await base44.entities.NavCategory.list();
-      for (const old of all) {
-        if (!existingIds.has(old.id)) {
-          await base44.entities.NavCategory.delete(old.id);
-        }
+      // Save categories
+      const existingCatIds = new Set(categories.filter((c) => c.id).map((c) => c.id));
+      const allCats = await base44.entities.NavCategory.list();
+      for (const old of allCats) {
+        if (!existingCatIds.has(old.id)) await base44.entities.NavCategory.delete(old.id);
       }
+      const savedCats = [];
       for (let i = 0; i < categories.length; i++) {
         const cat = { ...categories[i], order: i };
         delete cat._new;
         if (cat.id) {
           await base44.entities.NavCategory.update(cat.id, { name: cat.name, order: cat.order, nav_paths: cat.nav_paths || "" });
+          savedCats.push({ ...cat });
         } else {
-          await base44.entities.NavCategory.create({ name: cat.name, order: cat.order, nav_paths: cat.nav_paths || "" });
+          const created = await base44.entities.NavCategory.create({ name: cat.name, order: cat.order, nav_paths: cat.nav_paths || "" });
+          savedCats.push(created);
         }
       }
-      const refreshed = await base44.entities.NavCategory.list("order");
-      setCategories(refreshed);
-      toast({ title: "Nav categories saved" });
+      setCategories(savedCats);
+
+      // Save sections
+      const existingSecIds = new Set(sections.filter((s) => s.id).map((s) => s.id));
+      const allSecs = await base44.entities.NavSection.list();
+      for (const old of allSecs) {
+        if (!existingSecIds.has(old.id)) await base44.entities.NavSection.delete(old.id);
+      }
+      const savedSecs = [];
+      for (let i = 0; i < sections.length; i++) {
+        const sec = { ...sections[i], order: i };
+        delete sec._isNew;
+        delete sec._editKey;
+        if (sec.id) {
+          await base44.entities.NavSection.update(sec.id, { label: sec.label, path: sec.path, icon: sec.icon || "Circle", order: sec.order, category_name: sec.category_name || "" });
+          savedSecs.push({ ...sec });
+        } else {
+          const created = await base44.entities.NavSection.create({ label: sec.label, path: sec.path, icon: sec.icon || "Circle", order: sec.order, category_name: sec.category_name || "" });
+          savedSecs.push(created);
+        }
+      }
+      setSections(savedSecs);
+
+      toast({ title: "Nav sections & categories saved" });
     } catch (e) {
       toast({ title: "Failed to save", variant: "destructive" });
     }
@@ -87,87 +143,133 @@ export default function AdminNavCategories() {
     return <div className="flex items-center justify-center h-32"><div className="w-6 h-6 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin" /></div>;
   }
 
+  // Group sections by category
+  const uncategorizedSections = sections.filter((s) => !s.category_name);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold flex items-center gap-2"><GripVertical className="w-4 h-4" /> Sidebar Categories</h3>
+        <h3 className="font-semibold flex items-center gap-2"><GripVertical className="w-4 h-4" /> Sidebar Sections & Categories</h3>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={addSection} className="gap-1"><Plus className="w-3.5 h-3.5" /> Add Section</Button>
           <Button variant="outline" size="sm" onClick={addCategory} className="gap-1"><Plus className="w-3.5 h-3.5" /> Add Category</Button>
-          <Button onClick={save} disabled={saving} size="sm" className="gap-1"><Save className="w-3.5 h-3.5" /> {saving ? "Saving…" : "Save"}</Button>
+          <Button onClick={save} disabled={saving} size="sm" className="gap-1"><Save className="w-3.5 h-3.5" /> {saving ? "Saving…" : "Save All"}</Button>
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground mb-4">Create category headers (e.g. "Operations") and assign nav items to each. Unassigned items appear without a header. Drag order with the arrows.</p>
+      <p className="text-xs text-muted-foreground mb-4">Add, edit, and reorder nav sections (sidebar links). Assign each section to a category to group it under a header. Unassigned sections appear without a header.</p>
 
-      {categories.length === 0 && unassigned.length > 0 && (
-        <Card className="border-0 shadow-sm mb-4">
-          <CardContent className="p-4 text-center text-sm text-muted-foreground">No categories yet. Click "Add Category" to create one.</CardContent>
-        </Card>
+      {/* Categories editor */}
+      {categories.length > 0 && (
+        <div className="space-y-2 mb-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Categories</p>
+          {categories.map((cat, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <div className="flex flex-col">
+                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(idx, -1)} disabled={idx === 0}>▲</Button>
+                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(idx, 1)} disabled={idx === categories.length - 1}>▼</Button>
+              </div>
+              <Input
+                placeholder="Category name (e.g. Operations)"
+                value={cat.name}
+                onChange={(e) => updateCategory(idx, "name", e.target.value)}
+                className="font-semibold uppercase tracking-wide text-sm max-w-xs"
+              />
+              <Button variant="ghost" size="sm" onClick={() => removeCategory(idx)} className="ml-auto text-destructive hover:text-destructive">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
       )}
 
-      <div className="space-y-3">
-        {categories.map((cat, idx) => {
-          const catPaths = new Set((cat.nav_paths || "").split(",").filter(Boolean));
-          return (
-            <Card key={idx} className="border-0 shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex flex-col">
-                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(idx, -1)} disabled={idx === 0}>▲</Button>
-                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveCategory(idx, 1)} disabled={idx === categories.length - 1}>▼</Button>
-                  </div>
-                  <Input
-                    placeholder="Category name (e.g. Operations)"
-                    value={cat.name}
-                    onChange={(e) => updateCategory(idx, "name", e.target.value)}
-                    className="font-semibold uppercase tracking-wide text-sm max-w-xs"
-                  />
-                  <Button variant="ghost" size="sm" onClick={() => removeCategory(idx)} className="ml-auto text-destructive hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 pl-8">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const checked = catPaths.has(item.path);
-                    return (
-                      <button
-                        key={item.path}
-                        onClick={() => togglePath(idx, item.path)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                          checked ? "bg-navy-50 border-navy-200 font-medium" : "bg-white border-border hover:bg-muted/40 text-muted-foreground"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{item.label}</span>
-                        <Switch checked={checked} className="ml-auto scale-75" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* Sections */}
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Sections (Nav Links)</p>
+      <div className="space-y-1">
+        {sections.map((sec, idx) => (
+          <div key={idx} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-white hover:bg-muted/40 transition-colors">
+            <div className="flex flex-col">
+              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(idx, -1)} disabled={idx === 0}>▲</Button>
+              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => moveSection(idx, 1)} disabled={idx === sections.length - 1}>▼</Button>
+            </div>
+            <div className="flex-1 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-mono text-xs">
+                {sec.icon?.slice(0, 2) || "○"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{sec.label}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{sec.path}</p>
+              </div>
+              {sec.category_name && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-navy-50 text-navy-600 border border-navy-200 font-medium">{sec.category_name}</span>
+              )}
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => editExistingSection(idx)} className="text-muted-foreground">
+              <Pencil className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => removeSection(idx)} className="text-destructive hover:text-destructive">
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        ))}
+        {sections.length === 0 && (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 text-center text-sm text-muted-foreground">No sections yet. Click "Add Section" to create a nav link.</CardContent>
+          </Card>
+        )}
       </div>
 
-      {unassigned.length > 0 && (
-        <Card className="border-0 shadow-sm mt-4">
-          <CardContent className="p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Unassigned (no category header)</p>
-            <div className="flex flex-wrap gap-2">
-              {unassigned.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <span key={item.path} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted text-sm text-muted-foreground">
-                    <Icon className="w-3.5 h-3.5" /> {item.label}
-                  </span>
-                );
-              })}
+      {/* Edit/Add section dialog */}
+      <Dialog open={!!editSection} onOpenChange={(open) => !open && setEditSection(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editSection?._isNew ? "Add Section" : "Edit Section"}</DialogTitle>
+          </DialogHeader>
+          {editSection && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Label</label>
+                <Input
+                  placeholder="e.g. Dashboard"
+                  value={editSection.label}
+                  onChange={(e) => setEditSection({ ...editSection, label: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Path (route or URL)</label>
+                <Input
+                  placeholder="e.g. /dashboard or https://…"
+                  value={editSection.path}
+                  onChange={(e) => setEditSection({ ...editSection, path: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Icon</label>
+                <Select value={editSection.icon} onValueChange={(v) => setEditSection({ ...editSection, icon: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ICON_OPTIONS.map((ic) => <SelectItem key={ic} value={ic}>{ic}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Category</label>
+                <Select value={editSection.category_name || "none"} onValueChange={(v) => setEditSection({ ...editSection, category_name: v === "none" ? "" : v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {categories.filter((c) => c.name.trim()).map((c, i) => <SelectItem key={i} value={c.name}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditSection(null)}>Cancel</Button>
+            <Button onClick={saveSection}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
