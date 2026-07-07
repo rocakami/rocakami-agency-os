@@ -25,14 +25,20 @@ export default function Profile() {
   useEffect(() => {
     base44.auth.me().then(async (me) => {
       setUser(me);
-      const matches = await base44.entities.Contractor.filter({ email: me.email });
+      let matches = await base44.entities.Contractor.filter({ email: me.email });
+      if (matches.length === 0 && me.full_name) {
+        matches = await base44.entities.Contractor.filter({ name: me.full_name });
+      }
       if (matches.length > 0) {
-        const c = matches[0];
-        setContractor(c);
+        const c = matches.find((m) => m.employee_id) || matches[0];
+        if (c.email !== me.email) {
+          await base44.entities.Contractor.update(c.id, { email: me.email });
+        }
+        setContractor({ ...c, email: me.email });
         setForm({
           name: c.name || me.full_name || "",
           role: c.role || "",
-          email: c.email || me.email || "",
+          email: me.email || "",
           phone: c.phone || "",
           address: c.address || "",
           emergency_contact: c.emergency_contact || "",
