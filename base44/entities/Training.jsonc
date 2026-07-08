@@ -34,6 +34,9 @@
     "hidden": {
       "type": "boolean",
       "default": false
+    },
+    "related_sops": {
+      "type": "string"
     }
   },
   "required": [

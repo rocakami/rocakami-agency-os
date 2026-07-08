@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { Link } from "react-router-dom";
 import { GraduationCap, Video, FileText, CheckSquare, ListChecks, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,6 +13,7 @@ const typeIcons = { Video, "Written Guide": FileText, Quiz: CheckSquare, Checkli
 
 export default function TrainingCenter() {
   const [trainings, setTrainings] = useState([]);
+  const [sops, setSops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -20,10 +22,12 @@ export default function TrainingCenter() {
   useEffect(() => {
     Promise.all([
       base44.entities.Training.list("order"),
-      base44.auth.me()
-    ]).then(([trns, me]) => {
+      base44.auth.me(),
+      base44.entities.SOP.filter({ hidden: false })
+    ]).then(([trns, me, sopList]) => {
       setTrainings(trns);
       setCompleted(me.training_completed || []);
+      setSops(sopList);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -123,6 +127,21 @@ export default function TrainingCenter() {
                       <p className={`text-sm font-medium ${isChecked ? "line-through text-muted-foreground/60" : ""}`}>{t.title}</p>
                       <p className="text-xs text-muted-foreground">{t.type}{t.role_path ? ` · ${t.role_path}` : ""}</p>
                       {t.content && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{t.content}</p>}
+                      {t.related_sops && (() => {
+                        const ids = String(t.related_sops).split(",").map((s) => s.trim()).filter(Boolean);
+                        const linked = sops.filter((s) => ids.includes(s.id));
+                        if (linked.length === 0) return null;
+                        return (
+                          <div className="mt-1">
+                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mr-1">REFERENCE:</span>
+                            {linked.map((sop) => (
+                              <Link key={sop.id} to={`/sops/${sop.id}`} className="inline-flex items-center gap-0.5 text-[11px] text-sky-600 hover:underline mr-2">
+                                <FileText className="w-2.5 h-2.5" />{sop.title}
+                              </Link>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                     {t.completion_required && (
                       <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded whitespace-nowrap">Required</span>

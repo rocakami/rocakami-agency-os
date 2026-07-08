@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Wrench, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Wrench, ExternalLink, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
@@ -8,11 +9,13 @@ import EmptyState from "@/components/shared/EmptyState";
 
 export default function ToolsDirectory() {
   const [tools, setTools] = useState([]);
+  const [sops, setSops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     base44.entities.ToolEntry.list().then(setTools).finally(() => setLoading(false));
+    base44.entities.SOP.filter({ hidden: false }).then(setSops).catch(() => {});
   }, []);
 
   if (loading) {
@@ -53,9 +56,23 @@ export default function ToolsDirectory() {
                     {tool.best_practices && (
                       <div><p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">Best Practices</p><p className="text-xs text-muted-foreground">{tool.best_practices}</p></div>
                     )}
-                    {tool.related_sops && (
-                      <div><p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">Related SOPs</p><p className="text-xs text-muted-foreground">{tool.related_sops}</p></div>
-                    )}
+                    {tool.related_sops && (() => {
+                      const ids = String(tool.related_sops).split(",").map((s) => s.trim()).filter(Boolean);
+                      const linked = sops.filter((s) => ids.includes(s.id));
+                      if (linked.length === 0) return null;
+                      return (
+                        <div>
+                          <p className="text-[11px] font-semibold text-muted-foreground uppercase mb-1">REFERENCE</p>
+                          <div className="flex flex-wrap gap-2">
+                            {linked.map((sop) => (
+                              <Link key={sop.id} to={`/sops/${sop.id}`} className="inline-flex items-center gap-1 text-xs text-sky-600 hover:underline">
+                                <FileText className="w-3 h-3" />{sop.title}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     {tool.url && (
                       <a href={tool.url} target="_blank" rel="noopener noreferrer">
                         <Button variant="outline" size="sm" className="gap-1 text-xs mt-1"><ExternalLink className="w-3.5 h-3.5" /> Open Tool</Button>

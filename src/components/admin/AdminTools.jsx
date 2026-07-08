@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,10 +15,27 @@ export default function AdminTools() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: "", purpose: "", access_instructions: "", owner: "", related_sops: "", best_practices: "", url: "" });
+  const [contractors, setContractors] = useState([]);
+  const [sops, setSops] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.ToolEntry.list().then(setItems).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    base44.entities.Contractor.list().then(setContractors).catch(() => {});
+    base44.entities.SOP.filter({ hidden: false }).then(setSops).catch(() => {});
+  }, []);
+
+  const parseSopIds = (val) => {
+    if (!val) return [];
+    return String(val).split(",").map((s) => s.trim()).filter(Boolean);
+  };
+
+  const toggleSop = (sopId) => {
+    const current = parseSopIds(form.related_sops);
+    const next = current.includes(sopId) ? current.filter((s) => s !== sopId) : [...current, sopId];
+    setForm({ ...form, related_sops: next.join(",") });
+  };
 
   const openNew = () => { setEditing(null); setForm({ name: "", purpose: "", access_instructions: "", owner: "", related_sops: "", best_practices: "", url: "" }); setDialogOpen(true); };
   const openEdit = (t) => { setEditing(t); setForm({ name: t.name, purpose: t.purpose || "", access_instructions: t.access_instructions || "", owner: t.owner || "", related_sops: t.related_sops || "", best_practices: t.best_practices || "", url: t.url || "" }); setDialogOpen(true); };
@@ -66,9 +84,55 @@ export default function AdminTools() {
             <Input placeholder="Tool name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <Textarea placeholder="Purpose" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} />
             <Textarea placeholder="Access / login instructions" value={form.access_instructions} onChange={(e) => setForm({ ...form, access_instructions: e.target.value })} />
-            <Input placeholder="Owner" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} />
+            <Select value={form.owner || "__none"} onValueChange={(v) => setForm({ ...form, owner: v === "__none" ? "" : v })}>
+              <SelectTrigger><SelectValue placeholder="Owner" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">— None —</SelectItem>
+                {contractors.filter((c) => c.employment_category === "Manager" || c.employment_category === "Lead").map((c) => (
+                  <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input placeholder="URL" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
-            <Input placeholder="Related SOPs" value={form.related_sops} onChange={(e) => setForm({ ...form, related_sops: e.target.value })} />
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">REFERENCE — Related SOPs</label>
+              <Select value="__placeholder__" onValueChange={toggleSop}>
+                <SelectTrigger>
+                  <SelectValue placeholder={parseSopIds(form.related_sops).length > 0 ? `${parseSopIds(form.related_sops).length} selected` : "Select SOPs"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {sops.length === 0
+                    ? <SelectItem value="__none" disabled>No SOPs available</SelectItem>
+                    : sops.map((s) => {
+                      const selected = parseSopIds(form.related_sops).includes(s.id);
+                      return (
+                        <SelectItem key={s.id} value={s.id}>
+                          <span className="flex items-center gap-2">
+                            <span className={`w-3 h-3 rounded border flex items-center justify-center ${selected ? "bg-primary border-primary" : "border-input"}`}>
+                              {selected && <span className="text-white text-[8px]">✓</span>}
+                            </span>
+                            {s.title}
+                          </span>
+                        </SelectItem>
+                      );
+                    })
+                  }
+                </SelectContent>
+              </Select>
+              {parseSopIds(form.related_sops).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {parseSopIds(form.related_sops).map((id) => {
+                    const sop = sops.find((s) => s.id === id);
+                    return (
+                      <span key={id} className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+                        {sop ? sop.title : id}
+                        <button type="button" onClick={() => toggleSop(id)} className="text-muted-foreground hover:text-destructive">×</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <Textarea placeholder="Best practices" value={form.best_practices} onChange={(e) => setForm({ ...form, best_practices: e.target.value })} />
             <Button onClick={save} className="w-full">{editing ? "Update" : "Add"}</Button>
           </div>

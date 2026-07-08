@@ -15,14 +15,29 @@ export default function AdminTraining() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: "", type: "Written Guide", role_path: "", content: "", video_url: "", completion_required: false, order: 0 });
+  const [form, setForm] = useState({ title: "", type: "Written Guide", role_path: "", content: "", video_url: "", completion_required: false, order: 0, related_sops: "" });
+  const [sops, setSops] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Training.list("order").then(setItems).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    base44.entities.SOP.filter({ hidden: false }).then(setSops).catch(() => {});
+  }, []);
 
-  const openNew = () => { setEditing(null); setForm({ title: "", type: "Written Guide", role_path: "", content: "", video_url: "", completion_required: false, order: 0 }); setDialogOpen(true); };
-  const openEdit = (t) => { setEditing(t); setForm({ title: t.title, type: t.type, role_path: t.role_path || "", content: t.content || "", video_url: t.video_url || "", completion_required: t.completion_required || false, order: t.order || 0 }); setDialogOpen(true); };
+  const parseSopIds = (val) => {
+    if (!val) return [];
+    return String(val).split(",").map((s) => s.trim()).filter(Boolean);
+  };
+
+  const toggleSop = (sopId) => {
+    const current = parseSopIds(form.related_sops);
+    const next = current.includes(sopId) ? current.filter((s) => s !== sopId) : [...current, sopId];
+    setForm({ ...form, related_sops: next.join(",") });
+  };
+
+  const openNew = () => { setEditing(null); setForm({ title: "", type: "Written Guide", role_path: "", content: "", video_url: "", completion_required: false, order: 0, related_sops: "" }); setDialogOpen(true); };
+  const openEdit = (t) => { setEditing(t); setForm({ title: t.title, type: t.type, role_path: t.role_path || "", content: t.content || "", video_url: t.video_url || "", completion_required: t.completion_required || false, order: t.order || 0, related_sops: t.related_sops || "" }); setDialogOpen(true); };
 
   const save = async () => {
     if (!form.title) return;
@@ -87,6 +102,45 @@ export default function AdminTraining() {
             <div className="flex items-center gap-2">
               <Switch checked={form.completion_required} onCheckedChange={(v) => setForm({ ...form, completion_required: v })} />
               <span className="text-sm">Completion required</span>
+            </div>
+            <div className="space-y-1 pt-2 border-t">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">REFERENCE — Related SOPs</label>
+              <Select value="__placeholder__" onValueChange={toggleSop}>
+                <SelectTrigger>
+                  <SelectValue placeholder={parseSopIds(form.related_sops).length > 0 ? `${parseSopIds(form.related_sops).length} selected` : "Select SOPs"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {sops.length === 0
+                    ? <SelectItem value="__none" disabled>No SOPs available</SelectItem>
+                    : sops.map((s) => {
+                      const selected = parseSopIds(form.related_sops).includes(s.id);
+                      return (
+                        <SelectItem key={s.id} value={s.id}>
+                          <span className="flex items-center gap-2">
+                            <span className={`w-3 h-3 rounded border flex items-center justify-center ${selected ? "bg-primary border-primary" : "border-input"}`}>
+                              {selected && <span className="text-white text-[8px]">✓</span>}
+                            </span>
+                            {s.title}
+                          </span>
+                        </SelectItem>
+                      );
+                    })
+                  }
+                </SelectContent>
+              </Select>
+              {parseSopIds(form.related_sops).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {parseSopIds(form.related_sops).map((id) => {
+                    const sop = sops.find((s) => s.id === id);
+                    return (
+                      <span key={id} className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
+                        {sop ? sop.title : id}
+                        <button type="button" onClick={() => toggleSop(id)} className="text-muted-foreground hover:text-destructive">×</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <Button onClick={save} className="w-full">{editing ? "Update" : "Add"}</Button>
           </div>
