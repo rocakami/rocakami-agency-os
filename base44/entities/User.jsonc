@@ -7,6 +7,20 @@
         "admin",
         "user"
       ]
+    },
+    "onboarding_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of completed onboarding section items"
+    },
+    "training_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of completed training modules"
     }
   },
   "required": [

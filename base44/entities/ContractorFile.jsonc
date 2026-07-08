@@ -1,0 +1,23 @@
+{
+  "name": "ContractorFile",
+  "type": "object",
+  "properties": {
+    "contractor_id": {
+      "type": "string"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "drive_url": {
+      "type": "string"
+    },
+    "uploaded_by_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contractor_id",
+    "file_name",
+    "drive_url"
+  ]
+}

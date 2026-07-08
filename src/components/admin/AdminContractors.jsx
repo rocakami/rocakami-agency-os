@@ -16,6 +16,8 @@ export default function AdminContractors() {
   const [users, setUsers] = useState([]);
   const [permMap, setPermMap] = useState({});
   const [accessLoading, setAccessLoading] = useState(null);
+  const [onboardingSections, setOnboardingSections] = useState([]);
+  const [trainings, setTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -23,13 +25,17 @@ export default function AdminContractors() {
   const { toast } = useToast();
 
   const load = async () => {
-    const [contractorList, userList, permList] = await Promise.all([
+    const [contractorList, userList, permList, sectionList, trainingList] = await Promise.all([
       base44.entities.Contractor.list("-created_date"),
       base44.entities.User.list("-created_date"),
       base44.entities.NavPermission.list("-created_date"),
+      base44.entities.OnboardingSection.list("order"),
+      base44.entities.Training.list("order"),
     ]);
     setItems(contractorList);
     setUsers(userList);
+    setOnboardingSections(sectionList);
+    setTrainings(trainingList);
     const map = {};
     permList.forEach((p) => { map[p.user_id] = p; });
     setPermMap(map);
@@ -43,6 +49,16 @@ export default function AdminContractors() {
     if (!u) return false;
     const perm = permMap[u.id];
     return !!perm && (!perm.allowed_paths || perm.allowed_paths.trim() === "");
+  };
+
+  const getCompletionPct = (c) => {
+    const u = getUserForContractor(c);
+    if (!u) return null;
+    const totalOnboarding = onboardingSections.reduce((acc, s) => acc + (s.items ? s.items.split("\n").filter(Boolean).length : 0), 0);
+    const total = totalOnboarding + trainings.length;
+    if (total === 0) return 0;
+    const completedCount = (u.onboarding_completed?.length || 0) + (u.training_completed?.length || 0);
+    return Math.min(100, Math.round((completedCount / total) * 100));
   };
 
   const openNew = () => { setEditing(null); setForm({ name: "", role: "", email: "", rate: "", assigned_clients: "", contract_status: "Active", employment_status: "Full Time", performance_notes: "", start_date: "", employee_id: "", folder_url: "" }); setDialogOpen(true); };
@@ -102,11 +118,12 @@ export default function AdminContractors() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Rate</TableHead><TableHead>Employment</TableHead><TableHead>Contract</TableHead><TableHead>Section Access</TableHead><TableHead className="w-28">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Rate</TableHead><TableHead>Employment</TableHead><TableHead>Contract</TableHead><TableHead>Section Access</TableHead><TableHead>Onboarding</TableHead><TableHead className="w-28">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((c) => {
               const hasUser = !!getUserForContractor(c);
               const deactivated = isAccessDeactivated(c);
+              const completionPct = hasUser ? getCompletionPct(c) : null;
               return (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium text-sm">{c.name}</TableCell>
@@ -120,6 +137,12 @@ export default function AdminContractors() {
                       : deactivated
                         ? <Badge variant="outline" className="text-[10px] px-2 py-0 bg-red-50 text-red-700 border-red-200">Deactivated</Badge>
                         : <Badge variant="outline" className="text-[10px] px-2 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">Active</Badge>
+                    }
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {completionPct === null
+                      ? <span className="text-muted-foreground">—</span>
+                      : <span className={`font-medium ${completionPct === 100 ? "text-emerald-600" : completionPct >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>{completionPct}%</span>
                     }
                   </TableCell>
                   <TableCell>

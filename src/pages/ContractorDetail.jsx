@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import ContractorNotes from "@/components/contractor/ContractorNotes";
+import ContractorFiles from "@/components/contractor/ContractorFiles";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -239,6 +240,11 @@ export default function ContractorDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* File Upload Section */}
+      <div className="mt-5">
+        <ContractorFiles contractorId={id} contractorName={contractor.name} folderUrl={contractor.folder_url} />
+      </div>
     </div>
   );
 }

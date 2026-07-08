@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Search, Filter, BookOpen } from "lucide-react";
+import { Search, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,12 +36,6 @@ export default function SOPLibrary() {
     return true;
   });
 
-  const grouped = {};
-  filtered.forEach((s) => {
-    if (!grouped[s.category]) grouped[s.category] = [];
-    grouped[s.category].push(s);
-  });
-
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin" /></div>;
   }
@@ -70,38 +64,31 @@ export default function SOPLibrary() {
       {filtered.length === 0 ? (
         <EmptyState icon={BookOpen} title="No SOPs found" description="Try adjusting your filters or add new SOPs from the Admin panel." />
       ) : (
-        <div className="space-y-8">
-          {Object.entries(grouped).map(([cat, items]) => (
-            <div key={cat}>
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">{cat}</h3>
-              <div className="rounded-xl border border-border overflow-hidden">
-                <div className="grid items-center gap-4 px-4 py-2.5 bg-muted/50 border-b border-border" style={{ gridTemplateColumns: "1fr 7rem 7rem 7rem 6rem 4rem 8rem" }}>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Title</span>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Doc ID</span>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden md:block">Department</span>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden md:block">Category</span>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Status</span>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:block">Link</span>
-                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:block">Owner</span>
-                 </div>
-                {items.map((sop, idx) => (
-                  <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== items.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 7rem 7rem 7rem 6rem 4rem 8rem" }}>
-                     <span className="font-medium text-sm truncate">{sop.title}</span>
-                     <span className="text-xs font-mono text-primary font-semibold">{sop.document_id ? sop.document_id.replace(/^SOP\s/, "") : "—"}</span>
-                     <span className="text-xs text-muted-foreground hidden md:block">{sop.department || "—"}</span>
-                     <span className="text-xs text-muted-foreground hidden md:block">{sop.category || "—"}</span>
-                     <div><StatusBadge status={sop.status} /></div>
-                     <span className="hidden sm:block">
-                       {sop.google_doc_url
-                         ? <a href={sop.google_doc_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-sky-600 hover:underline font-medium">Here</a>
-                         : <span className="text-xs text-muted-foreground/50">—</span>
-                       }
-                     </span>
-                     <span className="text-xs text-muted-foreground hidden sm:block break-words">{sop.owner || "Unassigned"}</span>
-                   </Link>
-                ))}
-              </div>
-            </div>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="grid items-center gap-4 px-4 py-2.5 bg-muted/50 border-b border-border" style={{ gridTemplateColumns: "1fr 7rem 7rem 7rem 6rem 4rem 8rem" }}>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Title</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Doc ID</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden md:block">Department</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden md:block">Category</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Status</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:block">Link</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:block">Owner</span>
+          </div>
+          {filtered.map((sop, idx) => (
+            <Link key={sop.id} to={`/sops/${sop.id}`} className={`grid items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors ${idx !== filtered.length - 1 ? "border-b border-border" : ""}`} style={{ gridTemplateColumns: "1fr 7rem 7rem 7rem 6rem 4rem 8rem" }}>
+              <span className="font-medium text-sm truncate">{sop.title}</span>
+              <span className="text-xs font-mono text-primary font-semibold">{sop.document_id ? sop.document_id.replace(/^SOP\s/, "") : "—"}</span>
+              <span className="text-xs text-muted-foreground hidden md:block">{sop.department || "—"}</span>
+              <span className="text-xs text-muted-foreground hidden md:block">{sop.category || "—"}</span>
+              <div><StatusBadge status={sop.status} /></div>
+              <span className="hidden sm:block">
+                {sop.google_doc_url
+                  ? <a href={sop.google_doc_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-sky-600 hover:underline font-medium">Here</a>
+                  : <span className="text-xs text-muted-foreground/50">—</span>
+                }
+              </span>
+              <span className="text-xs text-muted-foreground hidden sm:block break-words">{sop.owner || "Unassigned"}</span>
+            </Link>
           ))}
         </div>
       )}
