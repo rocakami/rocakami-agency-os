@@ -43,6 +43,7 @@ export default function SOPDetail() {
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
+          {sop.document_id && <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-xs font-semibold mb-2">{sop.document_id}</span>}
           <h1 className="text-2xl font-bold mb-1">{sop.title}</h1>
           <p className="text-sm text-muted-foreground">{sop.category}</p>
         </div>

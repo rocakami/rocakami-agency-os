@@ -23,6 +23,9 @@
     "department": {
       "type": "string"
     },
+    "document_id": {
+      "type": "string"
+    },
     "owner": {
       "type": "string"
     },

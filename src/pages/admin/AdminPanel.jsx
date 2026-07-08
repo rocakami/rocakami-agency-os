@@ -10,6 +10,7 @@ import AdminTraining from "@/components/admin/AdminTraining";
 import AdminOnboarding from "@/components/admin/AdminOnboarding";
 import AdminPermissions from "@/components/admin/AdminPermissions";
 import AdminNavCategories from "@/components/admin/AdminNavCategories";
+import AdminPrefixes from "@/components/admin/AdminPrefixes";
 
 export default function AdminPanel() {
   return (
@@ -27,6 +28,7 @@ export default function AdminPanel() {
           <TabsTrigger value="onboarding" className="text-xs">Onboarding</TabsTrigger>
           <TabsTrigger value="permissions" className="text-xs">Permissions</TabsTrigger>
           <TabsTrigger value="nav-categories" className="text-xs">Nav Categories</TabsTrigger>
+          <TabsTrigger value="prefixes" className="text-xs">Dept Prefixes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sops"><AdminSOPs /></TabsContent>
@@ -38,6 +40,7 @@ export default function AdminPanel() {
         <TabsContent value="onboarding"><AdminOnboarding /></TabsContent>
         <TabsContent value="permissions"><AdminPermissions /></TabsContent>
         <TabsContent value="nav-categories"><AdminNavCategories /></TabsContent>
+        <TabsContent value="prefixes"><AdminPrefixes /></TabsContent>
       </Tabs>
     </div>
   );
