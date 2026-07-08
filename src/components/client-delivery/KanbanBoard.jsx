@@ -128,6 +128,7 @@ export default function KanbanBoard() {
               <TableHead>Project Title</TableHead>
               <TableHead className="w-[130px]">Start Date</TableHead>
               <TableHead className="w-[130px]">Due Date</TableHead>
+              <TableHead className="w-[140px]">Progress</TableHead>
               <TableHead className="w-[100px]">Stage</TableHead>
               <TableHead className="w-[120px]">Folder</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -136,7 +137,7 @@ export default function KanbanBoard() {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                   No projects found.
                 </TableCell>
               </TableRow>
@@ -152,6 +153,17 @@ export default function KanbanBoard() {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmtDate(p.start_date)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmtDate(p.due_date)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-sky-500 transition-all"
+                          style={{ width: `${p.progress || 0}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-muted-foreground w-8 text-right">{p.progress || 0}%</span>
+                    </div>
+                  </TableCell>
                   <TableCell><StatusBadge status={p.stage} /></TableCell>
                   <TableCell>
                     {p.folder_url ? (
