@@ -1,23 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { getNavIcon } from "@/lib/nav-icons";
-import { Check, ExternalLink, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { Check, ExternalLink, ChevronLeft, ChevronRight, BookOpen, RefreshCw, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import ReactMarkdown from "react-markdown";
 
-const getEmbedUrl = (url) => {
-  if (!url) return null;
-  if (url.includes("docs.google.com") && url.includes("/edit")) {
-    return url.replace("/edit", "/preview");
-  }
-  return url;
-};
+function htmlToMarkdown(html) {
+  let text = html;
+  // Remove style/script tags
+  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+  text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  // Headings
+  text = text.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n# $1\n');
+  text = text.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n## $1\n');
+  text = text.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n### $1\n');
+  text = text.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n#### $1\n');
+  // Bold and italic
+  text = text.replace(/<(b|strong)[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**');
+  text = text.replace(/<(i|em)[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*');
+  // Lists
+  text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '- $1\n');
+  text = text.replace(/<\/?(ul|ol)[^>]*>/gi, '\n');
+  // Links
+  text = text.replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
+  // Line breaks and paragraphs
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  text = text.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '\n$1\n');
+  // Remove remaining tags
+  text = text.replace(/<[^>]+>/g, '');
+  // Decode common HTML entities
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  // Clean up excessive blank lines
+  text = text.replace(/\n{3,}/g, '\n\n');
+  return text.trim();
+}
 
 export default function OnboardingClassModule({ lessons, completed, toggleItem }) {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [contentCache, setContentCache] = useState({});
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [errorContent, setErrorContent] = useState(null);
 
-  if (lessons.length === 0) return null;
-
-  const clampedIdx = Math.min(activeIdx, lessons.length - 1);
+  const clampedIdx = Math.min(activeIdx, Math.max(0, lessons.length - 1));
   const activeLesson = lessons[clampedIdx];
   const docKey = `${activeLesson.id}-doc`;
   const isChecked = completed.includes(docKey);
@@ -26,12 +57,35 @@ export default function OnboardingClassModule({ lessons, completed, toggleItem }
   const completedCount = lessons.filter((l) => completed.includes(`${l.id}-doc`)).length;
   const progressPct = Math.round((completedCount / lessons.length) * 100);
 
-  const goNext = () => {
-    if (clampedIdx < lessons.length - 1) setActiveIdx(clampedIdx + 1);
-  };
-  const goPrev = () => {
-    if (clampedIdx > 0) setActiveIdx(clampedIdx - 1);
-  };
+  const fetchContent = useCallback(async (lesson, force = false) => {
+    if (!force && contentCache[lesson.id]) return;
+    setLoadingContent(true);
+    setErrorContent(null);
+    try {
+      const resp = await base44.functions.invoke('fetchOnboardingDoc', { document_url: lesson.document_url });
+      const rawContent = resp.data?.content || '';
+      const format = resp.data?.format || 'text/plain';
+      const processed = format.includes('html') ? htmlToMarkdown(rawContent) : rawContent;
+      setContentCache((prev) => ({ ...prev, [lesson.id]: processed }));
+    } catch (e) {
+      setErrorContent(e.message || 'Failed to load document');
+    } finally {
+      setLoadingContent(false);
+    }
+  }, [contentCache]);
+
+  useEffect(() => {
+    if (activeLesson?.document_url && lessons.length > 0) {
+      fetchContent(activeLesson);
+    }
+  }, [activeLesson?.id, lessons.length]);
+
+  if (lessons.length === 0) return null;
+
+  const goNext = () => { if (clampedIdx < lessons.length - 1) setActiveIdx(clampedIdx + 1); };
+  const goPrev = () => { if (clampedIdx > 0) setActiveIdx(clampedIdx - 1); };
+
+  const cachedContent = contentCache[activeLesson?.id];
 
   return (
     <div className="mt-6 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
@@ -46,7 +100,9 @@ export default function OnboardingClassModule({ lessons, completed, toggleItem }
             <p className="text-xs text-muted-foreground">{completedCount} of {lessons.length} lessons completed</p>
           </div>
         </div>
-        <span className="text-sm font-bold text-primary">{progressPct}%</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-bold text-primary">{progressPct}%</span>
+        </div>
       </div>
 
       <div className="flex" style={{ minHeight: "640px" }}>
@@ -59,7 +115,6 @@ export default function OnboardingClassModule({ lessons, completed, toggleItem }
                 const key = `${lesson.id}-doc`;
                 const isDone = completed.includes(key);
                 const isActive = i === clampedIdx;
-                const LIcon = getNavIcon(lesson.icon);
                 return (
                   <button
                     key={lesson.id}
@@ -96,24 +151,51 @@ export default function OnboardingClassModule({ lessons, completed, toggleItem }
                 <h4 className="text-sm font-bold truncate">{activeLesson.title}</h4>
               </div>
             </div>
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors shrink-0 ml-3 ${
-              isChecked ? "bg-emerald-50 border-emerald-200" : "bg-muted/30 border-border"
-            }`}>
-              <Checkbox checked={isChecked} onCheckedChange={() => toggleItem(docKey)} id={`doc-${activeLesson.id}`} />
-              <label htmlFor={`doc-${activeLesson.id}`} className="text-xs font-medium cursor-pointer whitespace-nowrap">
-                {isChecked ? "Completed" : "Mark complete"}
-              </label>
+            <div className="flex items-center gap-2 shrink-0 ml-3">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loadingContent}
+                onClick={() => fetchContent(activeLesson, true)}
+                className="gap-1.5 h-8 text-xs"
+              >
+                {loadingContent ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                Refresh
+              </Button>
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${
+                isChecked ? "bg-emerald-50 border-emerald-200" : "bg-muted/30 border-border"
+              }`}>
+                <Checkbox checked={isChecked} onCheckedChange={() => toggleItem(docKey)} id={`doc-${activeLesson.id}`} />
+                <label htmlFor={`doc-${activeLesson.id}`} className="text-xs font-medium cursor-pointer whitespace-nowrap">
+                  {isChecked ? "Completed" : "Mark complete"}
+                </label>
+              </div>
             </div>
           </div>
 
-          {/* Embedded document */}
-          <div className="flex-1 bg-white overflow-hidden">
-            <iframe
-              src={getEmbedUrl(activeLesson.document_url)}
-              className="w-full h-full border-0"
-              style={{ minHeight: "500px" }}
-              title={activeLesson.title}
-            />
+          {/* Lesson content */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 bg-white" style={{ maxHeight: "560px" }}>
+            {loadingContent ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Loading lesson content…</p>
+              </div>
+            ) : errorContent ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <p className="text-sm text-destructive">{errorContent}</p>
+                <Button variant="outline" size="sm" onClick={() => fetchContent(activeLesson, true)} className="gap-1.5">
+                  <RefreshCw className="w-3 h-3" /> Try again
+                </Button>
+              </div>
+            ) : cachedContent ? (
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown>{cachedContent}</ReactMarkdown>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-20">
+                <p className="text-sm text-muted-foreground">No content available</p>
+              </div>
+            )}
           </div>
 
           {/* Footer nav */}
@@ -133,7 +215,7 @@ export default function OnboardingClassModule({ lessons, completed, toggleItem }
               className="inline-flex items-center gap-1 text-xs text-sky-600 hover:text-sky-700 font-medium"
             >
               <ExternalLink className="w-3 h-3" />
-              Open in new tab
+              Open original
             </a>
             <button
               onClick={goNext}

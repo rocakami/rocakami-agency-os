@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 import PageHeader from "@/components/shared/PageHeader";
 import { getNavIcon } from "@/lib/nav-icons";
 import { Loader2, ExternalLink } from "lucide-react";
@@ -47,30 +46,9 @@ export default function Onboarding() {
   const regularSections = sections.filter((s) => !s.document_url);
   const lessonSections = sections.filter((s) => s.document_url);
 
-  // Calculate completion
-  const totalItems = sections.reduce((acc, s) => {
-    const itemCount = s.items ? s.items.split("\n").filter(Boolean).length : 0;
-    const docCount = s.document_url ? 1 : 0;
-    return acc + itemCount + docCount;
-  }, 0);
-  const completedCount = completed.length;
-  const completionPct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
-
   return (
     <div>
       <PageHeader title="Employee Onboarding Hub" description="Everything you need to get started at RocaKami" />
-
-      {/* Progress bar */}
-      <Card className="border-0 shadow-sm mb-6">
-        <CardContent className="py-4 px-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Your onboarding progress</span>
-            <span className="text-sm font-bold text-primary">{completionPct}%</span>
-          </div>
-          <Progress value={completionPct} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">{completedCount} of {totalItems} items completed</p>
-        </CardContent>
-      </Card>
 
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
