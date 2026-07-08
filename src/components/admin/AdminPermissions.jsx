@@ -204,11 +204,9 @@ export default function AdminPermissions() {
                    </div>
                    <div className="flex gap-2">
                      {!permRecord && <Button variant="default" size="sm" onClick={handleApprove} disabled={saving}>Approve User</Button>}
-                     {!permRecord && (
-                       <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(selectedUser)} disabled={saving} className="gap-1">
-                         <Trash2 className="w-3.5 h-3.5" /> Delete
-                       </Button>
-                     )}
+                     <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(selectedUser)} disabled={saving} className="gap-1">
+                       <Trash2 className="w-3.5 h-3.5" /> Delete User
+                     </Button>
                      <Button variant="outline" size="sm" onClick={() => setAll(true)}>Enable All</Button>
                      <Button variant="outline" size="sm" onClick={() => setAll(false)}>Disable All</Button>
                    </div>
