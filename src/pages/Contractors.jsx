@@ -227,7 +227,7 @@ export default function Contractors() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none">— None —</SelectItem>
-                {contractors.filter((c) => c.employment_category === "Manager").map((c) => (
+                {contractors.filter((c) => c.employment_category === "Manager" || c.employment_category === "Lead").map((c) => (
                   <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
                 ))}
               </SelectContent>

@@ -3,9 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, ExternalLink, Loader2, Paperclip, FolderOpen } from "lucide-react";
+import { Upload, ExternalLink, Loader2, Paperclip, FolderOpen, Lock } from "lucide-react";
 
-export default function ContractorFiles({ contractorId, contractorName, folderUrl }) {
+export default function ContractorFiles({ contractorId, contractorName, folderUrl, canUpload, canAccess }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -55,7 +55,7 @@ export default function ContractorFiles({ contractorId, contractorName, folderUr
             <Paperclip className="w-4 h-4 text-muted-foreground" />
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Files</h3>
           </div>
-          {folderUrl && (
+          {folderUrl && canUpload && (
             <label className={`inline-flex items-center gap-2 h-8 rounded-md px-3 text-xs font-medium border shadow-sm cursor-pointer transition-colors ${uploading ? "opacity-50 pointer-events-none" : "hover:bg-accent hover:text-accent-foreground"}`}>
               <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} />
               {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
@@ -67,6 +67,11 @@ export default function ContractorFiles({ contractorId, contractorName, folderUr
           <div className="flex flex-col items-center py-6 text-center">
             <FolderOpen className="w-8 h-8 text-muted-foreground/40 mb-2" />
             <p className="text-sm text-muted-foreground">No personal folder assigned. An admin needs to generate one first.</p>
+          </div>
+        ) : !canAccess ? (
+          <div className="flex flex-col items-center py-6 text-center">
+            <Lock className="w-8 h-8 text-muted-foreground/40 mb-2" />
+            <p className="text-sm text-muted-foreground">Files are only accessible to the profile owner and administrators.</p>
           </div>
         ) : files.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">No files uploaded yet</p>

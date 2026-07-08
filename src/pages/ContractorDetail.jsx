@@ -25,6 +25,8 @@ export default function ContractorDetail() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canUpload, setCanUpload] = useState(false);
+  const [canAccess, setCanAccess] = useState(false);
   const [adminForm, setAdminForm] = useState({ rate: "", folder_url: "" });
   const [savingAdmin, setSavingAdmin] = useState(false);
   const [clients, setClients] = useState([]);
@@ -38,6 +40,21 @@ export default function ContractorDetail() {
         ]);
         const isAdminUser = me.role === "admin";
         setIsAdmin(isAdminUser);
+        // File access: upload = admin or Lead/Manager; view = admin or own profile
+        let uploadAllowed = isAdminUser;
+        let accessAllowed = isAdminUser;
+        if (!isAdminUser && me.email) {
+          try {
+            const myRecords = await base44.entities.Contractor.filter({ email: me.email });
+            if (myRecords.length > 0) {
+              const cat = (myRecords[0].employment_category || "").toLowerCase();
+              if (cat === "lead" || cat === "manager") uploadAllowed = true;
+            }
+            if (c.email && me.email.toLowerCase() === c.email.toLowerCase()) accessAllowed = true;
+          } catch {}
+        }
+        setCanUpload(uploadAllowed);
+        setCanAccess(accessAllowed);
         setContractor(c);
         setAdminForm({
           rate: c.rate || "",
@@ -247,7 +264,7 @@ export default function ContractorDetail() {
 
       {/* File Upload Section */}
       <div className="mt-5">
-        <ContractorFiles contractorId={id} contractorName={contractor.name} folderUrl={contractor.folder_url} />
+        <ContractorFiles contractorId={id} contractorName={contractor.name} folderUrl={contractor.folder_url} canUpload={canUpload} canAccess={canAccess} />
       </div>
     </div>
   );
