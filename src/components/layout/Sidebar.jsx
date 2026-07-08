@@ -82,6 +82,7 @@ export default function Sidebar() {
 
   const visibleItems = sourceItems.filter((item) => {
     if (item.path === "/") return true; // Dashboard always visible
+    if (item.path === "/contractors") return true; // Contractors always visible
     if (!allowedPaths) return true; // null = full access
     return allowedPaths.has(item.path);
   });
