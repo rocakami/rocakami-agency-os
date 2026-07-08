@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     // Find the max sequence number across all SOPs with this prefix
     const existing = await base44.asServiceRole.entities.SOP.list('-created_date', 500);
     let maxSeq = 0;
-    const pattern = `${prefix}-`;
+    const pattern = `SOP ${prefix}-`;
     existing.forEach((s) => {
       if (s.document_id && s.document_id.startsWith(pattern)) {
         const seqStr = s.document_id.slice(pattern.length).split(/\s/)[0];
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
       }
     });
     const seqNum = String(maxSeq + 1).padStart(3, '0');
-    const documentId = `${prefix}-${seqNum}`;
+    const documentId = `SOP ${prefix}-${seqNum}`;
 
     return Response.json({ document_id: documentId });
   } catch (error) {
