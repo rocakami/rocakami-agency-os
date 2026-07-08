@@ -36,8 +36,8 @@ export default function ContractorDetail() {
           base44.auth.me(),
           base44.entities.Contractor.get(id)
         ]);
-        const isAdminOrManager = me.role === "admin" || me.role === "manager";
-        setIsAdmin(isAdminOrManager);
+        const isAdminUser = me.role === "admin";
+        setIsAdmin(isAdminUser);
         setContractor(c);
         setAdminForm({
           rate: c.rate || "",

@@ -25,20 +25,22 @@ export default function AdminContractors() {
   const { toast } = useToast();
 
   const load = async () => {
-    const [contractorList, userList, permList, sectionList, trainingList] = await Promise.all([
-      base44.entities.Contractor.list("-created_date"),
-      base44.entities.User.list("-created_date"),
-      base44.entities.NavPermission.list("-created_date"),
-      base44.entities.OnboardingSection.list("order"),
-      base44.entities.Training.list("order"),
-    ]);
-    setItems(contractorList);
-    setUsers(userList);
-    setOnboardingSections(sectionList);
-    setTrainings(trainingList);
-    const map = {};
-    permList.forEach((p) => { map[p.user_id] = p; });
-    setPermMap(map);
+    try {
+      const [contractorList, userList, permList, sectionList, trainingList] = await Promise.all([
+        base44.entities.Contractor.list("-created_date"),
+        base44.entities.User.list("-created_date"),
+        base44.entities.NavPermission.list("-created_date"),
+        base44.entities.OnboardingSection.list("order"),
+        base44.entities.Training.list("order"),
+      ]);
+      setItems(contractorList);
+      setUsers(userList);
+      setOnboardingSections(sectionList);
+      setTrainings(trainingList);
+      const map = {};
+      permList.forEach((p) => { map[p.user_id] = p; });
+      setPermMap(map);
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
