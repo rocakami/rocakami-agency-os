@@ -124,10 +124,17 @@ export const AuthProvider = ({ children }) => {
               name: fullName,
               role: 'Team Member',
               email: currentUser.email,
-              employment_category: 'Employee',
+              employment_category: 'Contractor',
               employment_status: 'Full Time',
               contract_status: 'Active'
             }
+          });
+
+          // Restrict new logins to Dashboard + Onboarding only
+          await base44.entities.NavPermission.create({
+            user_id: currentUser.id,
+            user_name: fullName,
+            allowed_paths: '/,/onboarding'
           });
         }
       } catch (e) { /* non-critical — don't block login */ }
