@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Menu, X, Shield, Globe, Briefcase, UserCircle, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, Globe, Briefcase, UserCircle, LogOut } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 import { getNavIcon as getIcon } from "@/lib/nav-icons";
@@ -10,7 +10,6 @@ const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f
 export default function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [allowedPaths, setAllowedPaths] = useState(null); // null = all allowed
   const [permsLoaded, setPermsLoaded] = useState(false);
@@ -145,7 +144,6 @@ export default function Sidebar() {
                           localStorage.setItem("announcements_last_viewed", new Date().toISOString());
                           setUnreadAnnouncements(0);
                         }
-                        setMobileOpen(false);
                       }}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                         ${active
@@ -217,7 +215,6 @@ export default function Sidebar() {
       <div className="px-2 pb-1 pt-2 border-t border-white/10">
         <Link
           to="/profile"
-          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
             ${isActive("/profile")
               ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
@@ -245,7 +242,6 @@ export default function Sidebar() {
         <div className="px-2 pb-1 pt-2 border-t border-white/10">
           <Link
             to="/admin"
-            onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
               ${isActive("/admin")
                 ? "bg-[#229ece] text-white shadow-md shadow-sky-500/20"
@@ -281,29 +277,6 @@ export default function Sidebar() {
   }
 
   return (
-    <>
-      {/* Mobile toggle */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-[#1a3676] text-white p-2 rounded-lg shadow-lg"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="relative">{sidebarContent}</div>
-          <div className="flex-1 bg-black/50" onClick={() => setMobileOpen(false)}>
-            <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 text-white">
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block shrink-0">{sidebarContent}</div>
-    </>
+    <div className="hidden lg:block shrink-0">{sidebarContent}</div>
   );
 }

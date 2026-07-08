@@ -50,7 +50,8 @@ export default function Documents() {
       {filtered.length === 0 ? (
         <EmptyState icon={FolderOpen} title="No documents found" description="Upload documents from the Admin panel." />
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
+        <div className="rounded-xl border border-border overflow-x-auto">
+          <div className="min-w-[520px]">
           <div className="grid items-center gap-4 px-4 py-2.5 bg-muted/50 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider" style={{ gridTemplateColumns: "1fr 7rem 7rem 6rem 7rem" }}>
             <span>Title</span>
             <span>Status</span>
@@ -72,6 +73,7 @@ export default function Documents() {
               <span className="text-xs text-muted-foreground hidden sm:block truncate">{doc.owner || "—"}</span>
             </div>
           ))}
+          </div>
         </div>
       )}
     </div>

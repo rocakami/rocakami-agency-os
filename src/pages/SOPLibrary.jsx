@@ -65,7 +65,8 @@ export default function SOPLibrary() {
       {filtered.length === 0 ? (
         <EmptyState icon={BookOpen} title="No SOPs found" description="Try adjusting your filters or add new SOPs from the Admin panel." />
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
+        <div className="rounded-xl border border-border overflow-x-auto">
+          <div className="min-w-[680px]">
           <div className="grid items-center gap-4 px-4 py-2.5 bg-muted/50 border-b border-border" style={{ gridTemplateColumns: "1fr 7rem 7rem 7rem 6rem 4rem 8rem" }}>
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Title</span>
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Doc ID</span>
@@ -91,6 +92,7 @@ export default function SOPLibrary() {
               <span className="text-xs text-muted-foreground hidden sm:block break-words">{sop.owner || "Unassigned"}</span>
             </Link>
           ))}
+          </div>
         </div>
       )}
     </div>

@@ -79,16 +79,16 @@ export default function TrainingCenter() {
         </div>
       )}
 
-      <div className="mb-6 flex gap-3">
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Categories</SelectItem>
             {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Type" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             {["All", "Video", "Written Guide", "Quiz", "Checklist"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>

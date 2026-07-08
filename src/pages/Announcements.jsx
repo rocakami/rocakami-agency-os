@@ -33,7 +33,7 @@ export default function Announcements() {
 
       <div className="mb-6">
         <Select value={catFilter} onValueChange={setCatFilter}>
-          <SelectTrigger className="w-56"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-56"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             {["All", "Company Update", "Policy Change", "New Client", "Process Update", "Team Reminder"].map((c) => (
               <SelectItem key={c} value={c}>{c}</SelectItem>
