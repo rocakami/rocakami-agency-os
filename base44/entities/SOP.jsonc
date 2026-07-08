@@ -52,6 +52,10 @@
     },
     "related_templates": {
       "type": "string"
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

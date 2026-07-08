@@ -35,6 +35,10 @@
         "Draft"
       ],
       "default": "Active"
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

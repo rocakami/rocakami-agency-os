@@ -33,6 +33,12 @@ export default function AdminTraining() {
 
   const remove = async (id) => { await base44.entities.Training.delete(id); load(); toast({ title: "Training removed" }); };
 
+  const toggleVisibility = async (t) => {
+    await base44.entities.Training.update(t.id, { hidden: !t.hidden });
+    load();
+    toast({ title: !t.hidden ? "Training hidden from center" : "Training visible in center" });
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -42,7 +48,7 @@ export default function AdminTraining() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Title</TableHead><TableHead>Type</TableHead><TableHead>Role Path</TableHead><TableHead>Required</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Title</TableHead><TableHead>Type</TableHead><TableHead>Role Path</TableHead><TableHead>Required</TableHead><TableHead className="text-center">Visible</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((t) => (
               <TableRow key={t.id}>
@@ -50,6 +56,7 @@ export default function AdminTraining() {
                 <TableCell className="text-sm">{t.type}</TableCell>
                 <TableCell className="text-sm">{t.role_path || "—"}</TableCell>
                 <TableCell className="text-sm">{t.completion_required ? "✅" : "—"}</TableCell>
+                <TableCell className="text-center"><Switch checked={!t.hidden} onCheckedChange={() => toggleVisibility(t)} /></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(t)}><Pencil className="w-3.5 h-3.5" /></Button>

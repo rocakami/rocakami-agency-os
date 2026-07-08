@@ -30,6 +30,7 @@ export default function SOPLibrary() {
   }, []);
 
   const filtered = sops.filter((s) => {
+    if (s.hidden) return false;
     if (category !== "All" && s.category !== category) return false;
     if (status !== "All" && s.status !== status) return false;
     if (search && !s.title.toLowerCase().includes(search.toLowerCase())) return false;

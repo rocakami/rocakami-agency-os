@@ -30,6 +30,10 @@
     "order": {
       "type": "number",
       "default": 0
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

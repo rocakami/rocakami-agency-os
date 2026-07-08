@@ -22,6 +22,7 @@ export default function Documents() {
   }, []);
 
   const filtered = docs.filter((d) => {
+    if (d.hidden) return false;
     if (category !== "All" && d.category !== category) return false;
     if (search && !d.title.toLowerCase().includes(search.toLowerCase())) return false;
     return true;

@@ -41,6 +41,7 @@ export default function TrainingCenter() {
 
   const categories = [...new Set(trainings.map((t) => t.role_path).filter(Boolean))];
   const filtered = trainings.filter((t) =>
+    !t.hidden &&
     (typeFilter === "All" || t.type === typeFilter) &&
     (categoryFilter === "All" || t.role_path === categoryFilter)
   );

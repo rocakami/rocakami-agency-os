@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,6 +46,12 @@ export default function AdminDocuments() {
 
   const remove = async (id) => { await base44.entities.Document.delete(id); load(); toast({ title: "Document deleted" }); };
 
+  const toggleVisibility = async (doc) => {
+    await base44.entities.Document.update(doc.id, { hidden: !doc.hidden });
+    load();
+    toast({ title: !doc.hidden ? "Document hidden from repository" : "Document visible in repository" });
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -54,7 +61,7 @@ export default function AdminDocuments() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Owner</TableHead><TableHead>Status</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Owner</TableHead><TableHead>Status</TableHead><TableHead className="text-center">Visible</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {docs.map((d) => (
               <TableRow key={d.id}>
@@ -62,6 +69,7 @@ export default function AdminDocuments() {
                 <TableCell className="text-sm">{d.category}</TableCell>
                 <TableCell className="text-sm">{d.owner || "—"}</TableCell>
                 <TableCell><StatusBadge status={d.status} /></TableCell>
+                <TableCell className="text-center"><Switch checked={!d.hidden} onCheckedChange={() => toggleVisibility(d)} /></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" onClick={() => openEdit(d)}><Pencil className="w-3.5 h-3.5" /></Button>

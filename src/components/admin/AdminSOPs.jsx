@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Plus, Pencil, Trash2, FileText, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -86,6 +87,12 @@ export default function AdminSOPs() {
 
   const remove = async (id) => { await base44.entities.SOP.delete(id); load(); toast({ title: "SOP deleted" }); };
 
+  const toggleVisibility = async (sop) => {
+    await base44.entities.SOP.update(sop.id, { hidden: !sop.hidden });
+    load();
+    toast({ title: !sop.hidden ? "SOP hidden from library" : "SOP visible in library" });
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -95,7 +102,7 @@ export default function AdminSOPs() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Document ID</TableHead><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Department</TableHead><TableHead>Owner</TableHead><TableHead>Status</TableHead><TableHead className="text-center">Generate</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Document ID</TableHead><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Department</TableHead><TableHead>Owner</TableHead><TableHead>Status</TableHead><TableHead className="text-center">Generate</TableHead><TableHead className="text-center">Visible</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {sops.map((s) => (
               <TableRow key={s.id}>
@@ -115,6 +122,9 @@ export default function AdminSOPs() {
                       <Sparkles className="w-3.5 h-3.5" /> Generate
                     </Button>
                   )}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Switch checked={!s.hidden} onCheckedChange={() => toggleVisibility(s)} />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
