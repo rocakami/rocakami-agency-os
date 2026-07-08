@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Shield, Check, Save, Crown } from "lucide-react";
+import { Shield, Check, Save, Crown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -111,6 +111,24 @@ export default function AdminPermissions() {
     setSaving(false);
   };
 
+  const handleDeleteUser = async (user) => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await base44.entities.User.delete(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setPermissions((prev) => {
+        const next = { ...prev };
+        delete next[user.id];
+        return next;
+      });
+      toast({ title: "User deleted" });
+    } catch (e) {
+      toast({ title: "Failed to delete user", variant: "destructive" });
+    }
+    setSaving(false);
+  };
+
   const toggleAdmin = async (user) => {
     const newRole = user.role === "admin" ? "user" : "admin";
     setSaving(true);
@@ -186,6 +204,11 @@ export default function AdminPermissions() {
                    </div>
                    <div className="flex gap-2">
                      {!permRecord && <Button variant="default" size="sm" onClick={handleApprove} disabled={saving}>Approve User</Button>}
+                     {!permRecord && (
+                       <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(selectedUser)} disabled={saving} className="gap-1">
+                         <Trash2 className="w-3.5 h-3.5" /> Delete
+                       </Button>
+                     )}
                      <Button variant="outline" size="sm" onClick={() => setAll(true)}>Enable All</Button>
                      <Button variant="outline" size="sm" onClick={() => setAll(false)}>Disable All</Button>
                    </div>
