@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, FileText, ExternalLink, Loader2, Paperclip, FolderOpen } from "lucide-react";
+import { Upload, ExternalLink, Loader2, Paperclip, FolderOpen } from "lucide-react";
 
 export default function ContractorFiles({ contractorId, contractorName, folderUrl }) {
   const [files, setFiles] = useState([]);
@@ -11,7 +12,7 @@ export default function ContractorFiles({ contractorId, contractorName, folderUr
 
   const load = async () => {
     try {
-      const list = await base44.entities.ContractorFile.filter({ contractor_id: contractorId });
+      const list = await base44.entities.ContractorFile.filter({ contractor_id: contractorId }, "-created_date");
       setFiles(list);
     } catch (e) { /* ignore */ }
   };
@@ -23,15 +24,12 @@ export default function ContractorFiles({ contractorId, contractorName, folderUr
     if (!file) return;
     setUploading(true);
     try {
-      // Step 1: Upload to Base44 storage
       const uploadRes = await base44.integrations.Core.UploadFile({ file });
-      // Step 2: Move file into contractor's personal Drive folder
       const res = await base44.functions.invoke("uploadContractorFile", {
         contractor_id: contractorId,
         file_url: uploadRes.file_url,
         file_name: file.name
       });
-      // Step 3: Save a record for easy listing
       await base44.entities.ContractorFile.create({
         contractor_id: contractorId,
         file_name: file.name,
@@ -46,6 +44,8 @@ export default function ContractorFiles({ contractorId, contractorName, folderUr
     setUploading(false);
     e.target.value = "";
   };
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
   return (
     <Card className="border-0 shadow-sm">
@@ -71,17 +71,29 @@ export default function ContractorFiles({ contractorId, contractorName, folderUr
         ) : files.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">No files uploaded yet</p>
         ) : (
-          <div className="space-y-2">
-            {files.map((f) => (
-              <a key={f.id} href={f.drive_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
-                <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{f.file_name}</p>
-                  {f.uploaded_by_name && <p className="text-[11px] text-muted-foreground">Uploaded by {f.uploaded_by_name}</p>}
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-              </a>
-            ))}
+          <div className="rounded-lg border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40 hover:bg-muted/40">
+                  <TableHead>Title</TableHead>
+                  <TableHead className="w-[100px]">Link</TableHead>
+                  <TableHead className="w-[180px]">Date Uploaded</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {files.map((f) => (
+                  <TableRow key={f.id}>
+                    <TableCell className="text-sm font-medium truncate max-w-xs">{f.file_name}</TableCell>
+                    <TableCell>
+                      <a href={f.drive_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-sky-600 hover:underline font-medium">
+                        <ExternalLink className="w-3 h-3" /> Open
+                      </a>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{fmtDate(f.created_date)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </CardContent>

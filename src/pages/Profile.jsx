@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PageHeader from "@/components/shared/PageHeader";
+import ContractorFiles from "@/components/contractor/ContractorFiles";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, User, Save, Badge, Link as LinkIcon, Calendar, ExternalLink, Briefcase, FileCheck } from "lucide-react";
 
@@ -199,6 +200,13 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      {/* File Upload Section */}
+      {contractor && (
+        <div className="mt-5">
+          <ContractorFiles contractorId={contractor.id} contractorName={form.name} folderUrl={contractor.folder_url} />
+        </div>
+      )}
     </div>
   );
 }
