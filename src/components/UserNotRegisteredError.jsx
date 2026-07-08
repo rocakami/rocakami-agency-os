@@ -46,11 +46,11 @@ const UserNotRegisteredError = () => {
           ) : (
             <>
               <p className="text-slate-600 mb-8">
-                This portal is restricted to <strong>@rocakami.com</strong> Google accounts. Please sign out and use your Rocakami Google account.
+                Your account is <strong>pending admin approval</strong>. An administrator needs to approve your access before you can use this portal. Please contact your admin.
               </p>
               <div className="p-4 bg-slate-50 rounded-md text-sm text-slate-600">
-                {email && <p className="font-medium mb-1">Current: {email}</p>}
-                <p>Only @rocakami.com emails are accepted.</p>
+                {email && <p className="font-medium mb-1">Signed in as: {email}</p>}
+                <p>Once approved, sign back in with the same account.</p>
               </div>
             </>
           )}

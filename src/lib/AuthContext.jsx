@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { DEFAULT_NEW_USER_PATHS } from '@/lib/nav-items';
 
 const AuthContext = createContext();
 
@@ -91,27 +92,37 @@ export const AuthProvider = ({ children }) => {
 
   const checkUserAuth = async () => {
     try {
-      // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
-      
-      // Domain restriction: only @rocakami.com emails allowed
+
       const email = currentUser?.email || '';
-      if (!email.toLowerCase().endsWith('@rocakami.com')) {
+      const isCompanyDomain = email.toLowerCase().endsWith('@rocakami.com');
+
+      // Check if user has been approved (has a NavPermission record)
+      const existingPerms = await base44.entities.NavPermission.filter({ user_id: currentUser.id });
+      const hasPermission = existingPerms.length > 0;
+
+      // Non-company users (e.g. gmail) need admin approval before accessing
+      if (!hasPermission && !isCompanyDomain) {
         setAuthError({
-          type: 'domain_restricted',
-          message: 'Access is restricted to @rocakami.com accounts.'
+          type: 'pending_approval',
+          message: 'Account pending admin approval'
         });
         setIsLoadingAuth(false);
         setIsAuthenticated(false);
         setAuthChecked(true);
         return;
       }
-      
-      setUser(currentUser);
-      setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
+
+      // Auto-create NavPermission for company users on first login
+      if (!hasPermission && isCompanyDomain) {
+        const fullName = currentUser.full_name || currentUser.email.split('@')[0];
+        await base44.entities.NavPermission.create({
+          user_id: currentUser.id,
+          user_name: fullName,
+          allowed_paths: DEFAULT_NEW_USER_PATHS
+        });
+      }
 
       // Auto-create a Contractor record if one doesn't exist for this user
       try {
@@ -129,15 +140,13 @@ export const AuthProvider = ({ children }) => {
               contract_status: 'Active'
             }
           });
-
-          // Restrict new logins to Dashboard + Onboarding only
-          await base44.entities.NavPermission.create({
-            user_id: currentUser.id,
-            user_name: fullName,
-            allowed_paths: '/,/onboarding'
-          });
         }
       } catch (e) { /* non-critical — don't block login */ }
+
+      setUser(currentUser);
+      setIsAuthenticated(true);
+      setIsLoadingAuth(false);
+      setAuthChecked(true);
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);

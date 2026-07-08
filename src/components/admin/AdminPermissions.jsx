@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { navItems } from "@/lib/nav-items";
+import { navItems, DEFAULT_NEW_USER_PATHS } from "@/lib/nav-items";
 import { getNavIcon } from "@/lib/nav-icons";
 
 export default function AdminPermissions() {
@@ -44,7 +44,7 @@ export default function AdminPermissions() {
   const permRecord = selectedUserId ? permissions[selectedUserId] : null;
   const allowedSet = permRecord
     ? new Set((permRecord.allowed_paths || "").split(",").filter(Boolean))
-    : null; // null = no record = all access
+    : new Set(DEFAULT_NEW_USER_PATHS.split(",")); // no record = pending, default to restricted access
 
   const togglePath = (path) => {
     if (!selectedUserId) return;
@@ -90,6 +90,23 @@ export default function AdminPermissions() {
       toast({ title: "Permissions saved" });
     } catch (e) {
       toast({ title: "Failed to save", variant: "destructive" });
+    }
+    setSaving(false);
+  };
+
+  const handleApprove = async () => {
+    if (!selectedUserId) return;
+    setSaving(true);
+    try {
+      const created = await base44.entities.NavPermission.create({
+        user_id: selectedUserId,
+        user_name: selectedUser?.full_name || selectedUser?.email || "",
+        allowed_paths: DEFAULT_NEW_USER_PATHS,
+      });
+      setPermissions({ ...permissions, [selectedUserId]: created });
+      toast({ title: "User approved with default permissions" });
+    } catch (e) {
+      toast({ title: "Failed to approve", variant: "destructive" });
     }
     setSaving(false);
   };
@@ -149,7 +166,7 @@ export default function AdminPermissions() {
                      ? <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-navy-50 text-navy-700 border-navy-200 gap-0.5"><Crown className="w-2.5 h-2.5" /> Admin</Badge>
                      : hasRestrictions
                        ? <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">Restricted</Badge>
-                       : <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">Full Access</Badge>
+                       : <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-orange-50 text-orange-700 border-orange-200">Pending</Badge>
                    }
                  </div>
               </button>
@@ -168,6 +185,7 @@ export default function AdminPermissions() {
                      <p className="text-[11px] text-muted-foreground">Toggle which sections this staff member can access in the sidebar.</p>
                    </div>
                    <div className="flex gap-2">
+                     {!permRecord && <Button variant="default" size="sm" onClick={handleApprove} disabled={saving}>Approve User</Button>}
                      <Button variant="outline" size="sm" onClick={() => setAll(true)}>Enable All</Button>
                      <Button variant="outline" size="sm" onClick={() => setAll(false)}>Disable All</Button>
                    </div>
@@ -189,7 +207,7 @@ export default function AdminPermissions() {
                 <div className="space-y-1">
                   {allNavItems.map((item) => {
                     const Icon = item.icon;
-                    const checked = allowedSet ? allowedSet.has(item.path) : true;
+                    const checked = allowedSet.has(item.path);
                     return (
                       <div key={item.path} className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted/40 transition-colors">
                         <div className="flex items-center gap-3">

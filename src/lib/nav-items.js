@@ -3,6 +3,8 @@ import {
   Building2, Wrench, GraduationCap, Megaphone
 } from "lucide-react";
 
+export const DEFAULT_NEW_USER_PATHS = '/,/announcements,/sops,/documents,/onboarding,/tools,/training';
+
 export const navItems = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
   { label: "SOP Library", path: "/sops", icon: BookOpen },
