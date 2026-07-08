@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Search, BookOpen, FolderOpen, Users, Briefcase, Wrench, GraduationCap, Megaphone, ArrowRight, Clock, AlertCircle, Star, Rocket } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import StatusBadge from "@/components/shared/StatusBadge";
 
 const quickLinks = [
@@ -22,25 +23,33 @@ export default function Dashboard() {
   const [recentDocs, setRecentDocs] = useState([]);
   const [recentSops, setRecentSops] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [projects, setProjects] = useState({});
+  const [completionRate, setCompletionRate] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [me, ann, allTasks, docs, sops] = await Promise.all([
+        const [me, ann, allTasks, projectList, docs, sops] = await Promise.all([
           base44.auth.me(),
           base44.entities.Announcement.list("-created_date", 3),
-          base44.entities.Task.filter({ status: "To Do" }, "-due_date", 50),
+          base44.entities.Task.list("-due_date", 200),
+          base44.entities.ClientProject.list("-created_date", 200),
           base44.entities.Document.list("-updated_date", 5),
           base44.entities.SOP.list("-updated_date", 5),
         ]);
         setUser(me);
         setAnnouncements(ann);
+        const projectMap = {};
+        projectList.forEach((p) => { projectMap[p.id] = p; });
+        setProjects(projectMap);
         const userName = me?.full_name || "";
         const userTasks = userName
           ? allTasks.filter((t) => t.assigned_to && t.assigned_to.toLowerCase().includes(userName.toLowerCase()))
           : [];
-        setTasks(userTasks);
+        setTasks(userTasks.filter((t) => t.status !== "Done"));
+        const doneCount = userTasks.filter((t) => t.status === "Done").length;
+        setCompletionRate(userTasks.length > 0 ? Math.round((doneCount / userTasks.length) * 100) : 0);
         setRecentDocs(docs.filter((d) => !d.hidden));
         setRecentSops(sops.filter((s) => !s.hidden));
       } catch (e) { console.error(e); }
@@ -149,6 +158,15 @@ export default function Dashboard() {
               <AlertCircle className="w-5 h-5 text-rose-500" /> Pending Tasks
             </h2>
           </div>
+          <Card className="border-0 shadow-sm mb-3">
+            <CardContent className="py-3 px-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">My Task Completion</span>
+                <span className="text-sm font-bold text-foreground">{completionRate}%</span>
+              </div>
+              <Progress value={completionRate} className="h-2" />
+            </CardContent>
+          </Card>
           <div className="space-y-2">
             {tasks.length === 0 ? (
               <Card className="border-0 shadow-sm"><CardContent className="py-8 text-center text-muted-foreground text-sm">All caught up! 🎉</CardContent></Card>
@@ -159,7 +177,7 @@ export default function Dashboard() {
                     <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{t.title}</p>
-                      {t.due_date && <p className="text-[11px] text-muted-foreground">Due {new Date(t.due_date).toLocaleDateString()}</p>}
+                      {t.due_date && <p className="text-[11px] text-muted-foreground">Due {new Date(t.due_date).toLocaleDateString()}{projects[t.project_id]?.client_name ? ` • ${projects[t.project_id].client_name}` : ""}</p>}
                     </div>
                     <StatusBadge status={t.priority} />
                   </div>

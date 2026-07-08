@@ -3,20 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, ListChecks } from "lucide-react";
+import { Loader2, Plus, ListChecks } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-const STATUS_STYLES = {
-  "To Do": "bg-gray-100 text-gray-700 border-gray-200",
-  "In Progress": "bg-blue-100 text-blue-700 border-blue-200",
-  "Done": "bg-green-100 text-green-700 border-green-200",
-};
-
-const PRIORITY_STYLES = {
-  "Low": "text-gray-500",
-  "Medium": "text-amber-600",
-  "High": "text-red-600",
-};
+import TaskRow from "./TaskRow";
 
 export default function ProjectTasks({ projectId }) {
   const [tasks, setTasks] = useState([]);
@@ -53,26 +42,15 @@ export default function ProjectTasks({ projectId }) {
     setSaving(false);
   };
 
-  const cycleStatus = async (task) => {
-    const next = task.status === "To Do" ? "In Progress" : task.status === "In Progress" ? "Done" : "To Do";
-    try {
-      await base44.entities.Task.update(task.id, { status: next });
-      load();
-    } catch (e) {
-      toast({ title: "Error updating task", variant: "destructive" });
-    }
-  };
-
   const deleteTask = async (taskId) => {
     try {
       await base44.entities.Task.delete(taskId);
       load();
+      toast({ title: "Task deleted" });
     } catch (e) {
       toast({ title: "Error deleting task", variant: "destructive" });
     }
   };
-
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : null;
 
   return (
     <div>
@@ -90,13 +68,11 @@ export default function ProjectTasks({ projectId }) {
         <div className="rounded-lg border p-3 mb-3 space-y-2 bg-muted/30">
           <Input placeholder="Task title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <div className="grid grid-cols-2 gap-2">
-            <Select value={form.assigned_to} onValueChange={(v) => setForm({ ...form, assigned_to: v })}>
+            <Select value={form.assigned_to || "__none"} onValueChange={(v) => setForm({ ...form, assigned_to: v === "__none" ? "" : v })}>
               <SelectTrigger><SelectValue placeholder="Assigned to" /></SelectTrigger>
               <SelectContent>
-                {contractors.length === 0
-                  ? <SelectItem value="__none" disabled>No contractors available</SelectItem>
-                  : contractors.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)
-                }
+                <SelectItem value="__none">— None —</SelectItem>
+                {contractors.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
@@ -108,7 +84,7 @@ export default function ProjectTasks({ projectId }) {
             </Select>
             <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{["To Do", "In Progress", "Done"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              <SelectContent>{["To Do", "In Progress", "On Hold", "Done"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <Button onClick={addTask} disabled={saving || !form.title.trim()} size="sm" className="gap-2">
@@ -129,27 +105,7 @@ export default function ProjectTasks({ projectId }) {
       ) : (
         <div className="rounded-lg border divide-y">
           {tasks.map((t) => (
-            <div key={t.id} className="flex items-center gap-3 p-3 group hover:bg-muted/20 transition-colors">
-              <button
-                onClick={() => cycleStatus(t)}
-                className={`text-[11px] font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_STYLES[t.status] || STATUS_STYLES["To Do"]}`}
-              >
-                {t.status.toLowerCase()}
-              </button>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">{t.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t.assigned_to && <span>{t.assigned_to}</span>}
-                  {t.assigned_to && t.due_date && <span> • </span>}
-                  {t.due_date && <span>due {fmtDate(t.due_date)}</span>}
-                  {t.assigned_to || t.due_date ? <span> • </span> : null}
-                  <span className={PRIORITY_STYLES[t.priority] || ""}>{t.priority?.toLowerCase()}</span>
-                </p>
-              </div>
-              <button onClick={() => deleteTask(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity shrink-0">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <TaskRow key={t.id} task={t} contractors={contractors} onUpdated={load} onDeleted={deleteTask} />
           ))}
         </div>
       )}

@@ -20,9 +20,13 @@
       "enum": [
         "To Do",
         "In Progress",
+        "On Hold",
         "Done"
       ],
       "default": "To Do"
+    },
+    "completed_at": {
+      "type": "string"
     },
     "priority": {
       "type": "string",

@@ -21,11 +21,17 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY);
+  const [userForm, setUserForm] = useState({ linkedin_url: "", personal_email: "", instagram_url: "" });
   const { toast } = useToast();
 
   useEffect(() => {
     base44.auth.me().then(async (me) => {
       setUser(me);
+      setUserForm({
+        linkedin_url: me.linkedin_url || "",
+        personal_email: me.personal_email || "",
+        instagram_url: me.instagram_url || "",
+      });
       let matches = await base44.entities.Contractor.filter({ email: me.email });
       if (matches.length === 0 && me.full_name) {
         matches = await base44.entities.Contractor.filter({ name: me.full_name });
@@ -57,6 +63,7 @@ export default function Profile() {
   const save = async () => {
     setSaving(true);
     try {
+      await base44.auth.updateMe(userForm);
       if (contractor) {
         await base44.entities.Contractor.update(contractor.id, form);
       } else {
@@ -123,6 +130,22 @@ export default function Profile() {
                 <label className="text-xs font-medium text-muted-foreground">Phone</label>
                 <Input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Personal Email</label>
+                <Input value={userForm.personal_email || ""} onChange={(e) => setUserForm({ ...userForm, personal_email: e.target.value })} placeholder="personal@email.com" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">LinkedIn</label>
+                <Input value={userForm.linkedin_url || ""} onChange={(e) => setUserForm({ ...userForm, linkedin_url: e.target.value })} placeholder="https://linkedin.com/in/…" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Instagram</label>
+              <Input value={userForm.instagram_url || ""} onChange={(e) => setUserForm({ ...userForm, instagram_url: e.target.value })} placeholder="https://instagram.com/…" />
             </div>
 
             <div className="space-y-1">

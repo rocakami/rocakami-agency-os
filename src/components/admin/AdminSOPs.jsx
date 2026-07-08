@@ -28,32 +28,16 @@ export default function AdminSOPs() {
   const { toast } = useToast();
 
   const load = async () => {
-    const [sopList, prefixList, categoryList, contractorList, taskList] = await Promise.all([
+    const [sopList, prefixList, categoryList, contractorList] = await Promise.all([
       base44.entities.SOP.list("-updated_date"),
       base44.entities.DepartmentPrefix.list("order"),
       base44.entities.SopCategory.list("order"),
-      base44.entities.Contractor.list("-created_date", 500),
-      base44.entities.Task.list()
+      base44.entities.Contractor.list("-created_date", 500)
     ]);
     setSops(sopList);
     setDeptPrefixes(prefixList);
     setSopCategories(categoryList);
-    // Build unique owner list from all contractors + task assignees
-    const ownerMap = new Map();
-    contractorList.forEach((c) => {
-      if (c.name) ownerMap.set(c.name, { name: c.name, role: c.role || c.employment_category || "" });
-    });
-    taskList.forEach((t) => {
-      if (t.assigned_to) {
-        String(t.assigned_to).split(",").map((s) => s.trim()).filter(Boolean).forEach((name) => {
-          if (!ownerMap.has(name)) {
-            const contractor = contractorList.find((c) => c.name === name);
-            ownerMap.set(name, { name, role: contractor ? (contractor.role || contractor.employment_category || "") : "Task Assignee" });
-          }
-        });
-      }
-    });
-    setManagers(Array.from(ownerMap.values()).sort((a, b) => a.name.localeCompare(b.name)));
+    setManagers(contractorList);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
@@ -175,8 +159,8 @@ export default function AdminSOPs() {
               <Select value={form.owner} onValueChange={(v) => setForm({ ...form, owner: v })}>
                 <SelectTrigger><SelectValue placeholder="Owner" /></SelectTrigger>
                 <SelectContent>
-                  {managers.map((m) => <SelectItem key={m.name} value={m.name}>{m.name}{m.role ? ` — ${m.role}` : ""}</SelectItem>)}
-                  {managers.length === 0 && <SelectItem value="_none" disabled>No owners found</SelectItem>}
+                  {managers.map((m) => <SelectItem key={m.id} value={m.name}>{m.name}{m.role ? ` — ${m.role}` : ""}</SelectItem>)}
+                  {managers.length === 0 && <SelectItem value="_none" disabled>No contractors found</SelectItem>}
                 </SelectContent>
               </Select>
             </div>

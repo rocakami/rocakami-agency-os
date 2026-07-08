@@ -21,6 +21,15 @@
         "type": "string"
       },
       "description": "IDs of completed training modules"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "personal_email": {
+      "type": "string"
+    },
+    "instagram_url": {
+      "type": "string"
     }
   },
   "required": [
