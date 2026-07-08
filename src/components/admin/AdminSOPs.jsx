@@ -73,8 +73,7 @@ export default function AdminSOPs() {
     try {
       const res = await base44.functions.invoke("generateSopId", { prefix: prefixEntry.prefix });
       const documentId = res.data.document_id;
-      const newTitle = `${documentId} ${sop.title}`;
-      await base44.entities.SOP.update(sop.id, { document_id: documentId, title: newTitle });
+      await base44.entities.SOP.update(sop.id, { document_id: documentId });
       toast({ title: `Generated: ${documentId}` });
       load();
     } catch {

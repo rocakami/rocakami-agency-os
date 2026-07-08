@@ -280,7 +280,7 @@ export default function Contractors() {
               </Select>
               <Select value={form.employment_category} onValueChange={(v) => setForm({ ...form, employment_category: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{["Manager", "Contractor", "Employee"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{["Manager", "Lead", "Contractor", "Employee"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
