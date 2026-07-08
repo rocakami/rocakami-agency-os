@@ -9,6 +9,8 @@ import ProjectOverviewList from "@/components/project-overview/ProjectOverviewLi
 import TasksDueSoon from "@/components/project-overview/TasksDueSoon";
 import RevenueChart from "@/components/project-overview/RevenueChart";
 import RecentClientActivity from "@/components/project-overview/RecentClientActivity";
+import UpcomingDeadlines from "@/components/project-overview/UpcomingDeadlines";
+import TeamWorkload from "@/components/project-overview/TeamWorkload";
 
 const RANGES = [
   { label: "Last 7 days", days: 7 },
@@ -25,19 +27,22 @@ export default function ProjectOverview() {
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [contractors, setContractors] = useState([]);
   const [range, setRange] = useState(30);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [projList, clientList, taskList] = await Promise.all([
+        const [projList, clientList, taskList, contractorList] = await Promise.all([
           base44.entities.ClientProject.list("-created_date", 200),
           base44.entities.Client.list("-created_date", 200),
           base44.entities.Task.list("-due_date", 200),
+          base44.entities.Contractor.list("-created_date", 200),
         ]);
         setProjects(projList);
         setClients(clientList);
         setTasks(taskList);
+        setContractors(contractorList);
       } catch (e) { console.error(e); }
       setLoading(false);
     };
@@ -127,6 +132,12 @@ export default function ProjectOverview() {
       <div className="grid lg:grid-cols-2 gap-6">
         <RecentClientActivity clients={clients} projects={projects} />
         <RevenueChart projects={projects} range={range} totalRevenue={totalRevenue} />
+      </div>
+
+      {/* Final Row: Upcoming Deadlines + Team Workload */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <UpcomingDeadlines projects={projects} tasks={tasks} />
+        <TeamWorkload contractors={contractors} tasks={tasks} />
       </div>
 
       {/* Quick Links */}

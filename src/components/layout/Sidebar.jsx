@@ -89,15 +89,16 @@ export default function Sidebar() {
   // Build grouped nav: by category_name, preserving DB order
   const navGroups = (() => {
     const groups = [];
-    const seenCats = new Set();
+    const groupMap = {};
     for (const item of visibleItems) {
       const catName = item.category_name || "";
       if (!catName) continue;
-      if (!seenCats.has(catName)) {
-        seenCats.add(catName);
-        groups.push({ category: { name: catName }, items: [] });
+      if (!groupMap[catName]) {
+        const group = { category: { name: catName }, items: [] };
+        groupMap[catName] = group;
+        groups.push(group);
       }
-      groups[groups.length - 1].items.push(item);
+      groupMap[catName].items.push(item);
     }
     // Add uncategorized items
     const unassigned = visibleItems.filter((item) => !item.category_name);
