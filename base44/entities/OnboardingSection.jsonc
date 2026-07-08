@@ -19,6 +19,9 @@
     "items": {
       "type": "string"
     },
+    "document_url": {
+      "type": "string"
+    },
     "order": {
       "type": "number",
       "default": 0

@@ -21,7 +21,7 @@ const COLORS = [
   { label: "Teal", value: "bg-teal-500" }
 ];
 
-const blank = { title: "", icon: "Heart", color: "bg-navy-600", content: "", items: "", order: 0 };
+const blank = { title: "", icon: "Heart", color: "bg-navy-600", content: "", items: "", document_url: "", order: 0 };
 
 export default function AdminOnboarding() {
   const [items, setItems] = useState([]);
@@ -37,7 +37,7 @@ export default function AdminOnboarding() {
   const openNew = () => { setEditing(null); setForm(blank); setDialogOpen(true); };
   const openEdit = (s) => {
     setEditing(s);
-    setForm({ title: s.title, icon: s.icon || "Heart", color: s.color || "bg-navy-600", content: s.content || "", items: s.items || "", order: s.order || 0 });
+    setForm({ title: s.title, icon: s.icon || "Heart", color: s.color || "bg-navy-600", content: s.content || "", items: s.items || "", document_url: s.document_url || "", order: s.order || 0 });
     setDialogOpen(true);
   };
 
@@ -118,6 +118,11 @@ export default function AdminOnboarding() {
             <div className="space-y-1">
               <Textarea placeholder="Items (one per line, for checklist/bulleted sections)" rows={4} value={form.items} onChange={(e) => setForm({ ...form, items: e.target.value })} />
               <p className="text-xs text-muted-foreground">Tip: To add a document link, use the format: Item text | https://link.com</p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Document URL (embeds as a lesson with completion tracking)</label>
+              <Input placeholder="https://docs.google.com/document/d/..." value={form.document_url} onChange={(e) => setForm({ ...form, document_url: e.target.value })} />
+              <p className="text-xs text-muted-foreground">Add a Google Doc, PDF, or video link. Sections with a document appear as full-width lesson cards at the bottom of the onboarding page.</p>
             </div>
             <Input type="number" placeholder="Order" value={form.order} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })} />
             <Button onClick={save} className="w-full">{editing ? "Update" : "Add"}</Button>

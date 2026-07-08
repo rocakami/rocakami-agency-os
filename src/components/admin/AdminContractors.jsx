@@ -54,11 +54,20 @@ export default function AdminContractors() {
   const getCompletionPct = (c) => {
     const u = getUserForContractor(c);
     if (!u) return null;
-    const totalOnboarding = onboardingSections.reduce((acc, s) => acc + (s.items ? s.items.split("\n").filter(Boolean).length : 0), 0);
-    const total = totalOnboarding + trainings.length;
-    if (total === 0) return 0;
-    const completedCount = (u.onboarding_completed?.length || 0) + (u.training_completed?.length || 0);
-    return Math.min(100, Math.round((completedCount / total) * 100));
+    const totalOnboarding = onboardingSections.reduce((acc, s) => {
+      const itemCount = s.items ? s.items.split("\n").filter(Boolean).length : 0;
+      const docCount = s.document_url ? 1 : 0;
+      return acc + itemCount + docCount;
+    }, 0);
+    if (totalOnboarding === 0) return 0;
+    return Math.min(100, Math.round((u.onboarding_completed?.length || 0) / totalOnboarding * 100));
+  };
+
+  const getTrainingPct = (c) => {
+    const u = getUserForContractor(c);
+    if (!u) return null;
+    if (trainings.length === 0) return 0;
+    return Math.min(100, Math.round((u.training_completed?.length || 0) / trainings.length * 100));
   };
 
   const openNew = () => { setEditing(null); setForm({ name: "", role: "", email: "", rate: "", assigned_clients: "", contract_status: "Active", employment_status: "Full Time", performance_notes: "", start_date: "", employee_id: "", folder_url: "" }); setDialogOpen(true); };
@@ -118,12 +127,13 @@ export default function AdminContractors() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Rate</TableHead><TableHead>Employment</TableHead><TableHead>Contract</TableHead><TableHead>Section Access</TableHead><TableHead>Onboarding</TableHead><TableHead className="w-28">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Rate</TableHead><TableHead>Employment</TableHead><TableHead>Contract</TableHead><TableHead>Section Access</TableHead><TableHead>Onboarding</TableHead><TableHead>Training</TableHead><TableHead className="w-28">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((c) => {
               const hasUser = !!getUserForContractor(c);
               const deactivated = isAccessDeactivated(c);
               const completionPct = hasUser ? getCompletionPct(c) : null;
+              const trainingPct = hasUser ? getTrainingPct(c) : null;
               return (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium text-sm">{c.name}</TableCell>
@@ -143,6 +153,12 @@ export default function AdminContractors() {
                     {completionPct === null
                       ? <span className="text-muted-foreground">—</span>
                       : <span className={`font-medium ${completionPct === 100 ? "text-emerald-600" : completionPct >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>{completionPct}%</span>
+                    }
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {trainingPct === null
+                      ? <span className="text-muted-foreground">—</span>
+                      : <span className={`font-medium ${trainingPct === 100 ? "text-emerald-600" : trainingPct >= 50 ? "text-amber-600" : "text-muted-foreground"}`}>{trainingPct}%</span>
                     }
                   </TableCell>
                   <TableCell>

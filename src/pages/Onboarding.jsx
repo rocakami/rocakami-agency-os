@@ -7,6 +7,14 @@ import PageHeader from "@/components/shared/PageHeader";
 import { getNavIcon } from "@/lib/nav-icons";
 import { Loader2, ExternalLink } from "lucide-react";
 
+const getEmbedUrl = (url) => {
+  if (!url) return null;
+  if (url.includes("docs.google.com") && url.includes("/edit")) {
+    return url.replace("/edit", "/preview");
+  }
+  return url;
+};
+
 export default function Onboarding() {
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,8 +50,16 @@ export default function Onboarding() {
     return { text: text.trim(), link: link ? link.trim() : null };
   };
 
+  // Split sections: regular (no document_url) vs lesson sections (with document_url)
+  const regularSections = sections.filter((s) => !s.document_url);
+  const lessonSections = sections.filter((s) => s.document_url);
+
   // Calculate completion
-  const totalItems = sections.reduce((acc, s) => acc + (s.items ? s.items.split("\n").filter(Boolean).length : 0), 0);
+  const totalItems = sections.reduce((acc, s) => {
+    const itemCount = s.items ? s.items.split("\n").filter(Boolean).length : 0;
+    const docCount = s.document_url ? 1 : 0;
+    return acc + itemCount + docCount;
+  }, 0);
   const completedCount = completed.length;
   const completionPct = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
@@ -68,7 +84,7 @@ export default function Onboarding() {
       ) : (
         <>
           <div className="grid sm:grid-cols-2 gap-5">
-            {sections.map((section) => {
+            {regularSections.map((section) => {
               const Icon = getNavIcon(section.icon);
               const items = section.items ? section.items.split("\n").filter(Boolean).map(parseItem) : [];
               return (
@@ -108,6 +124,44 @@ export default function Onboarding() {
               );
             })}
           </div>
+
+          {/* Lesson sections — full width, at the very bottom */}
+          {lessonSections.map((section) => {
+            const Icon = getNavIcon(section.icon);
+            const docKey = `${section.id}-doc`;
+            const isChecked = completed.includes(docKey);
+            const embedUrl = getEmbedUrl(section.document_url);
+            return (
+              <Card key={section.id} className="border-0 shadow-sm mt-6">
+                <CardContent className="py-6 px-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-10 h-10 rounded-xl ${section.color || "bg-navy-600"} text-white flex items-center justify-center`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-base">{section.title}</h3>
+                      {section.content && <p className="text-xs text-muted-foreground mt-0.5">{section.content}</p>}
+                    </div>
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${isChecked ? "bg-emerald-50/50 border-emerald-200" : "bg-muted/30"}`}>
+                      <Checkbox checked={isChecked} onCheckedChange={() => toggleItem(docKey)} id={`doc-${section.id}`} />
+                      <label htmlFor={`doc-${section.id}`} className="text-xs font-medium cursor-pointer">
+                        {isChecked ? "Completed" : "Mark complete"}
+                      </label>
+                    </div>
+                  </div>
+                  <div className="rounded-lg overflow-hidden border bg-muted/20">
+                    <iframe src={embedUrl} className="w-full" style={{ minHeight: "600px" }} title={section.title} />
+                  </div>
+                  <div className="mt-3 flex justify-end">
+                    <a href={section.document_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-sky-600 hover:text-sky-700 font-medium">
+                      <ExternalLink className="w-3 h-3" />
+                      Open in new tab
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </>
       )}
     </div>

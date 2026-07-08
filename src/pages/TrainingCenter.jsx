@@ -14,6 +14,7 @@ export default function TrainingCenter() {
   const [trainings, setTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
   const [completed, setCompleted] = useState([]);
 
   useEffect(() => {
@@ -38,8 +39,12 @@ export default function TrainingCenter() {
     }
   };
 
-  const filtered = trainings.filter((t) => typeFilter === "All" || t.type === typeFilter);
-  const rolePaths = [...new Set(trainings.map((t) => t.role_path).filter(Boolean))];
+  const categories = [...new Set(trainings.map((t) => t.role_path).filter(Boolean))];
+  const filtered = trainings.filter((t) =>
+    (typeFilter === "All" || t.type === typeFilter) &&
+    (categoryFilter === "All" || t.role_path === categoryFilter)
+  );
+  const rolePaths = categories;
   const completionPct = trainings.length > 0 ? Math.round((completed.length / trainings.length) * 100) : 0;
 
   if (loading) {
@@ -73,7 +78,14 @@ export default function TrainingCenter() {
         </div>
       )}
 
-      <div className="mb-6">
+      <div className="mb-6 flex gap-3">
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-48"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All Categories</SelectItem>
+            {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-48"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
