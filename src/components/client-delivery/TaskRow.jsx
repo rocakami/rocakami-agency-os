@@ -83,12 +83,7 @@ export default function TaskRow({ task, contractors, onUpdated, onDeleted }) {
             <SelectContent>{["Low", "Medium", "High"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
-          <Select value={editForm.priority} onValueChange={(v) => setEditForm({ ...editForm, priority: v })}>
-            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-            <SelectContent>{["Low", "Medium", "High"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-          </Select>
-          <div className="flex-1" />
+        <div className="flex items-center justify-end gap-2">
           <Button size="sm" onClick={saveEdit} disabled={saving || !editForm.title.trim()} className="gap-1">
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Save
           </Button>
