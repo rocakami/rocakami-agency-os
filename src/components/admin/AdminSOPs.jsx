@@ -63,18 +63,9 @@ export default function AdminSOPs() {
 
   const generateForSop = async (sop) => {
     if (sop.document_id) return;
-    if (!sop.department) {
-      toast({ title: "Assign a department first, then generate", variant: "destructive" });
-      return;
-    }
-    const prefixEntry = deptPrefixes.find((p) => p.department === sop.department);
-    if (!prefixEntry) {
-      toast({ title: "No prefix found for this department", variant: "destructive" });
-      return;
-    }
     setGeneratingRowId(sop.id);
     try {
-      const res = await base44.functions.invoke("generateSopId", { prefix: prefixEntry.prefix });
+      const res = await base44.functions.invoke("generateSopId", {});
       const documentId = res.data.document_id;
       await base44.entities.SOP.update(sop.id, { document_id: documentId });
       toast({ title: `Generated: ${documentId}` });
@@ -168,7 +159,7 @@ export default function AdminSOPs() {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-[11px] text-muted-foreground">The SOP number (e.g. <span className="font-mono font-semibold">SOP RK-EX-001</span>) is generated via the <span className="font-medium">Generate</span> button in the table after saving — it requires a department to be set.</p>
+            <p className="text-[11px] text-muted-foreground">The SOP number (e.g. <span className="font-mono font-semibold">SOP RK-001</span>) is generated via the <span className="font-medium">Generate</span> button in the table after saving. Numbers are sequential and global — not tied to department.</p>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Google Doc URL</label>
               <Input placeholder="https://docs.google.com/document/d/…" value={form.google_doc_url} onChange={(e) => setForm({ ...form, google_doc_url: e.target.value })} />
