@@ -41,8 +41,8 @@ export default function Dashboard() {
           ? allTasks.filter((t) => t.assigned_to && t.assigned_to.toLowerCase().includes(userName.toLowerCase()))
           : [];
         setTasks(userTasks);
-        setRecentDocs(docs);
-        setRecentSops(sops);
+        setRecentDocs(docs.filter((d) => !d.hidden));
+        setRecentSops(sops.filter((s) => !s.hidden));
       } catch (e) { console.error(e); }
       setLoading(false);
     };
@@ -182,16 +182,16 @@ export default function Dashboard() {
               View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentSops.length === 0 ? (
               <Card className="border-0 shadow-sm"><CardContent className="py-6 text-center text-muted-foreground text-sm">No SOPs yet</CardContent></Card>
             ) : recentSops.map((s) => (
               <Link key={s.id} to={`/sops/${s.id}`}>
                 <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="py-3 px-4 flex items-center justify-between">
+                  <CardContent className="py-3.5 px-4 flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{s.title}</p>
-                      <p className="text-[11px] text-muted-foreground">{s.category}</p>
+                      <p className="text-xs font-medium truncate leading-relaxed">{s.title}</p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">{s.category}</p>
                     </div>
                     <StatusBadge status={s.status} />
                   </CardContent>
@@ -211,15 +211,15 @@ export default function Dashboard() {
               View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentDocs.length === 0 ? (
               <Card className="border-0 shadow-sm"><CardContent className="py-6 text-center text-muted-foreground text-sm">No documents yet</CardContent></Card>
             ) : recentDocs.map((d) => (
               <Card key={d.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="py-3 px-4 flex items-center justify-between">
+                <CardContent className="py-3.5 px-4 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{d.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{d.category}</p>
+                    <p className="text-xs font-medium truncate leading-relaxed">{d.title}</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">{d.category}</p>
                   </div>
                   <StatusBadge status={d.status} />
                 </CardContent>
