@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Pencil, FolderOpen, Briefcase, UserCheck,
-  Mail, Phone, Globe, MapPin, Building2, Linkedin, Facebook, Instagram, Twitter, Youtube, Loader2
+  Mail, Phone, Globe, MapPin, Building2, ExternalLink, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,11 +86,11 @@ export default function ClientDetail() {
   }
 
   const socialLinks = [
-    { url: client.linkedin_url, icon: Linkedin, label: "LinkedIn" },
-    { url: client.facebook_url, icon: Facebook, label: "Facebook" },
-    { url: client.instagram_url, icon: Instagram, label: "Instagram" },
-    { url: client.twitter_url, icon: Twitter, label: "X (Twitter)" },
-    { url: client.youtube_url, icon: Youtube, label: "YouTube" },
+    { url: client.linkedin_url, label: "LinkedIn" },
+    { url: client.facebook_url, label: "Facebook" },
+    { url: client.instagram_url, label: "Instagram" },
+    { url: client.twitter_url, label: "X (Twitter)" },
+    { url: client.youtube_url, label: "YouTube" },
   ].filter((s) => s.url);
 
   return (
@@ -176,7 +176,7 @@ export default function ClientDetail() {
                   <div className="flex flex-wrap gap-3">
                     {socialLinks.map((s) => (
                       <a key={s.label} href={s.url.startsWith('http') ? s.url : `https://${s.url}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-muted/70 text-sm transition-colors">
-                        <s.icon className="w-4 h-4 text-[#1a3676]" />
+                        <ExternalLink className="w-4 h-4 text-[#1a3676]" />
                         <span>{s.label}</span>
                       </a>
                     ))}
