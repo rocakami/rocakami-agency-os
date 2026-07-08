@@ -112,6 +112,25 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
       setAuthChecked(true);
+
+      // Auto-create a Contractor record if one doesn't exist for this user
+      try {
+        const existing = await base44.entities.Contractor.filter({ email: currentUser.email });
+        if (existing.length === 0) {
+          const fullName = currentUser.full_name || currentUser.email.split('@')[0];
+          await base44.functions.invoke('manageContractor', {
+            action: 'create',
+            data: {
+              name: fullName,
+              role: 'Team Member',
+              email: currentUser.email,
+              employment_category: 'Employee',
+              employment_status: 'Full Time',
+              contract_status: 'Active'
+            }
+          });
+        }
+      } catch (e) { /* non-critical — don't block login */ }
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
