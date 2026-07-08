@@ -21,6 +21,7 @@ import Documents from '@/pages/Documents';
 import Onboarding from '@/pages/Onboarding';
 import ClientDelivery from '@/pages/ClientDelivery';
 import ProjectDetail from '@/pages/ProjectDetail';
+import ProjectOverview from '@/pages/ProjectOverview';
 import ClientDirectory from '@/pages/ClientDirectory';
 import ClientDetail from '@/pages/ClientDetail';
 import Contractors from '@/pages/Contractors';
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
           <Route path="/documents" element={<Documents />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/client-delivery" element={<ClientDelivery />} />
+          <Route path="/projectoverview" element={<ProjectOverview />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/clients" element={<ClientDirectory />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
