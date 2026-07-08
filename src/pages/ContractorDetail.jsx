@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import ContractorNotes from "@/components/contractor/ContractorNotes";
 import ContractorFiles from "@/components/contractor/ContractorFiles";
+import ContractorPermissions from "@/components/contractor/ContractorPermissions";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -240,6 +241,9 @@ export default function ContractorDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* Permissions Section (admin/manager only) */}
+      {isAdmin && <ContractorPermissions contractor={contractor} />}
 
       {/* File Upload Section */}
       <div className="mt-5">
