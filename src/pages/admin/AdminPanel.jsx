@@ -11,6 +11,7 @@ import AdminOnboarding from "@/components/admin/AdminOnboarding";
 import AdminPermissions from "@/components/admin/AdminPermissions";
 import AdminNavCategories from "@/components/admin/AdminNavCategories";
 import AdminPrefixes from "@/components/admin/AdminPrefixes";
+import AdminSopCategories from "@/components/admin/AdminSopCategories";
 
 export default function AdminPanel() {
   return (
@@ -40,7 +41,12 @@ export default function AdminPanel() {
         <TabsContent value="onboarding"><AdminOnboarding /></TabsContent>
         <TabsContent value="permissions"><AdminPermissions /></TabsContent>
         <TabsContent value="nav-categories"><AdminNavCategories /></TabsContent>
-        <TabsContent value="prefixes"><AdminPrefixes /></TabsContent>
+        <TabsContent value="prefixes">
+          <div className="space-y-8">
+            <AdminPrefixes />
+            <AdminSopCategories />
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );

@@ -9,13 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import StatusBadge from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/ui/use-toast";
 
-const categories = ["Sales", "Client Onboarding", "Website Project", "CRM & GHL", "SEO", "Customer Support", "Finance & Admin", "HR & Contractor", "Automation", "Quality Assurance"];
+const fallbackCategories = ["Sales", "Client Onboarding", "Website Project", "CRM & GHL", "SEO", "Customer Support", "Finance & Admin", "HR & Contractor", "Automation", "Quality Assurance"];
 
 const emptyForm = { title: "", category: "Sales", department: "", document_id: "", owner: "", status: "Draft", google_doc_url: "" };
 
 export default function AdminSOPs() {
   const [sops, setSops] = useState([]);
   const [deptPrefixes, setDeptPrefixes] = useState([]);
+  const [sopCategories, setSopCategories] = useState([]);
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -26,13 +27,15 @@ export default function AdminSOPs() {
   const { toast } = useToast();
 
   const load = async () => {
-    const [sopList, prefixList, contractorList] = await Promise.all([
+    const [sopList, prefixList, categoryList, contractorList] = await Promise.all([
       base44.entities.SOP.list("-updated_date"),
       base44.entities.DepartmentPrefix.list("order"),
+      base44.entities.SopCategory.list("order"),
       base44.entities.Contractor.list("-created_date", 500)
     ]);
     setSops(sopList);
     setDeptPrefixes(prefixList);
+    setSopCategories(categoryList);
     // Managers and supervisors from Contractors data
     const filtered = contractorList.filter((c) =>
       c.employment_category === "Manager" ||
@@ -142,7 +145,7 @@ export default function AdminSOPs() {
             <div className="grid grid-cols-2 gap-3">
               <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                 <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
-                <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{(sopCategories.length ? sopCategories.map((c) => c.name) : fallbackCategories).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                 <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
