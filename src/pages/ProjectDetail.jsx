@@ -8,6 +8,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import ProjectFormDialog from "@/components/client-delivery/ProjectFormDialog";
 import ProjectTasks from "@/components/client-delivery/ProjectTasks";
+import ProjectGantt from "@/components/client-delivery/ProjectGantt";
 
 const STAGES = ["Intake", "Discovery", "Proposal", "Onboarding", "Active", "Closure"];
 
@@ -26,8 +27,17 @@ export default function ProjectDetail() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [clients, setClients] = useState([]);
   const [contractors, setContractors] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
-  const load = () => base44.entities.ClientProject.get(id).then(setProject).finally(() => setLoading(false));
+  const load = async () => {
+    const [proj, taskList] = await Promise.all([
+      base44.entities.ClientProject.get(id),
+      base44.entities.Task.filter({ project_id: id }, "-created_date")
+    ]);
+    setProject(proj);
+    setTasks(taskList);
+    setLoading(false);
+  };
 
   useEffect(() => {
     load();
@@ -93,6 +103,26 @@ export default function ProjectDetail() {
     { label: "Billing Status", value: <StatusBadge status={project.billing_status} /> },
   ];
 
+  const doneCount = tasks.filter((t) => t.status === "Done").length;
+  const progress = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+
+  const computeOnTrack = () => {
+    if (!project.start_date || !project.due_date) return null;
+    const start = new Date(project.start_date).getTime();
+    const end = new Date(project.due_date).getTime();
+    const now = Date.now();
+    if (now > end) {
+      return progress === 100
+        ? { label: "Completed", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" }
+        : { label: "Overdue", cls: "bg-rose-50 text-rose-700 border-rose-200" };
+    }
+    const elapsed = (now - start) / (end - start);
+    const expected = Math.min(100, Math.max(0, elapsed * 100));
+    if (progress >= expected - 10) return { label: "On Track", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    return { label: "At Risk", cls: "bg-amber-50 text-amber-700 border-amber-200" };
+  };
+  const onTrack = computeOnTrack();
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -108,6 +138,35 @@ export default function ProjectDetail() {
 
       <PageHeader title={project.title} description={`${project.client_name || "—"} • ${project.project_type || "Project"}`} />
 
+      {/* Progress Summary */}
+      <Card className="border-0 shadow-sm mb-6">
+        <CardContent className="py-5 px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <StatusBadge status={project.stage} />
+              {onTrack && (
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${onTrack.cls}`}>{onTrack.label}</span>
+              )}
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-foreground">{progress}%</span>
+              <span className="text-sm text-muted-foreground ml-1">complete</span>
+              {project.start_date && project.due_date && (
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {fmtDate(project.start_date)} → {fmtDate(project.due_date)}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-sky-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            {doneCount} of {tasks.length} tasks completed
+          </p>
+        </CardContent>
+      </Card>
+
       {/* General Section */}
       <Card className="border-0 shadow-sm mb-6">
         <CardContent className="py-6">
@@ -120,17 +179,6 @@ export default function ProjectDetail() {
               </div>
             ))}
           </div>
-          {project.progress != null && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Progress</p>
-                <span className="text-xs font-semibold">{project.progress}%</span>
-              </div>
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full bg-sky-500 rounded-full" style={{ width: `${project.progress}%` }} />
-              </div>
-            </div>
-          )}
           {project.description && (
             <div className="mt-4 pt-4 border-t">
               <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Description</p>
@@ -166,10 +214,18 @@ export default function ProjectDetail() {
         </Card>
       ) : null}
 
+      {/* Gantt Schedule */}
+      <Card className="border-0 shadow-sm mb-6">
+        <CardContent className="py-6">
+          <h3 className="font-bold text-sm uppercase tracking-wide text-muted-foreground mb-4">Schedule — Gantt</h3>
+          <ProjectGantt project={project} tasks={tasks} />
+        </CardContent>
+      </Card>
+
       {/* Tasks Section */}
       <Card className="border-0 shadow-sm mb-6">
         <CardContent className="py-6">
-          <ProjectTasks projectId={id} />
+          <ProjectTasks projectId={id} onTasksChanged={load} />
         </CardContent>
       </Card>
 

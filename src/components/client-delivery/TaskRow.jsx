@@ -26,6 +26,7 @@ export default function TaskRow({ task, contractors, onUpdated, onDeleted }) {
   const [editForm, setEditForm] = useState({
     title: task.title,
     assigned_to: task.assigned_to || "",
+    start_date: task.start_date || "",
     due_date: task.due_date || "",
     priority: task.priority || "Medium",
   });
@@ -73,7 +74,14 @@ export default function TaskRow({ task, contractors, onUpdated, onDeleted }) {
               {contractors.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Input type="date" value={editForm.start_date} onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
           <Input type="date" value={editForm.due_date} onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })} />
+          <Select value={editForm.priority} onValueChange={(v) => setEditForm({ ...editForm, priority: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{["Low", "Medium", "High"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-2">
           <Select value={editForm.priority} onValueChange={(v) => setEditForm({ ...editForm, priority: v })}>

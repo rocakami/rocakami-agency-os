@@ -15,6 +15,10 @@
       "type": "string",
       "format": "date"
     },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
     "status": {
       "type": "string",
       "enum": [

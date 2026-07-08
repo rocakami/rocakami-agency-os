@@ -7,12 +7,12 @@ import { Loader2, Plus, ListChecks } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import TaskRow from "./TaskRow";
 
-export default function ProjectTasks({ projectId }) {
+export default function ProjectTasks({ projectId, onTasksChanged }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ title: "", assigned_to: "", due_date: "", priority: "Medium", status: "To Do" });
+  const [form, setForm] = useState({ title: "", assigned_to: "", start_date: "", due_date: "", priority: "Medium", status: "To Do" });
   const [contractors, setContractors] = useState([]);
   const { toast } = useToast();
 
@@ -27,14 +27,19 @@ export default function ProjectTasks({ projectId }) {
     base44.entities.Contractor.list().then(setContractors).catch(() => {});
   }, [projectId]);
 
+  const reload = () => {
+    load();
+    if (onTasksChanged) onTasksChanged();
+  };
+
   const addTask = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
     try {
       await base44.entities.Task.create({ ...form, project_id: projectId });
-      setForm({ title: "", assigned_to: "", due_date: "", priority: "Medium", status: "To Do" });
+      setForm({ title: "", assigned_to: "", start_date: "", due_date: "", priority: "Medium", status: "To Do" });
       setShowForm(false);
-      load();
+      reload();
       toast({ title: "Task added" });
     } catch (e) {
       toast({ title: "Error adding task", variant: "destructive" });
@@ -45,7 +50,7 @@ export default function ProjectTasks({ projectId }) {
   const deleteTask = async (taskId) => {
     try {
       await base44.entities.Task.delete(taskId);
-      load();
+      reload();
       toast({ title: "Task deleted" });
     } catch (e) {
       toast({ title: "Error deleting task", variant: "destructive" });
@@ -75,18 +80,19 @@ export default function ProjectTasks({ projectId }) {
                 {contractors.map((c) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+            <Input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} placeholder="Start date" />
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} placeholder="Due date" />
             <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{["Low", "Medium", "High"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
             </Select>
-            <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{["To Do", "In Progress", "On Hold", "Done"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-            </Select>
           </div>
+          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{["To Do", "In Progress", "On Hold", "Done"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+          </Select>
           <Button onClick={addTask} disabled={saving || !form.title.trim()} size="sm" className="gap-2">
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
             Save Task
@@ -105,7 +111,7 @@ export default function ProjectTasks({ projectId }) {
       ) : (
         <div className="rounded-lg border divide-y">
           {tasks.map((t) => (
-            <TaskRow key={t.id} task={t} contractors={contractors} onUpdated={load} onDeleted={deleteTask} />
+            <TaskRow key={t.id} task={t} contractors={contractors} onUpdated={reload} onDeleted={deleteTask} />
           ))}
         </div>
       )}

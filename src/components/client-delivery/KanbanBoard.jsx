@@ -14,6 +14,7 @@ const STAGES = ["Intake", "Discovery", "Proposal", "Onboarding", "Active", "Clos
 export default function KanbanBoard() {
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -22,7 +23,15 @@ export default function KanbanBoard() {
   const [generatingId, setGeneratingId] = useState(null);
   const { toast } = useToast();
 
-  const load = () => base44.entities.ClientProject.list().then(setProjects).finally(() => setLoading(false));
+  const load = async () => {
+    const [projectList, taskList] = await Promise.all([
+      base44.entities.ClientProject.list(),
+      base44.entities.Task.list()
+    ]);
+    setProjects(projectList);
+    setAllTasks(taskList);
+    setLoading(false);
+  };
   useEffect(() => {
     load();
     base44.entities.Client.list().then(setClients).catch(() => {});
@@ -75,6 +84,13 @@ export default function KanbanBoard() {
   };
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+  const computeProgress = (projectId) => {
+    const ptasks = allTasks.filter((t) => t.project_id === projectId);
+    if (ptasks.length === 0) return 0;
+    const done = ptasks.filter((t) => t.status === "Done").length;
+    return Math.round((done / ptasks.length) * 100);
+  };
 
   if (loading) {
     return (
@@ -154,15 +170,20 @@ export default function KanbanBoard() {
                   <TableCell className="text-sm text-muted-foreground">{fmtDate(p.start_date)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmtDate(p.due_date)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-sky-500 transition-all"
-                          style={{ width: `${p.progress || 0}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground w-8 text-right">{p.progress || 0}%</span>
-                    </div>
+                    {(() => {
+                      const progress = computeProgress(p.id);
+                      return (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-sky-500 transition-all"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground w-8 text-right">{progress}%</span>
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell><StatusBadge status={p.stage} /></TableCell>
                   <TableCell>
