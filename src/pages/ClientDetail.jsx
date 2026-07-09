@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Pencil, FolderOpen, Briefcase, UserCheck,
@@ -203,19 +203,21 @@ export default function ClientDetail() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects.map((p) => (
-                <Card key={p.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                  <CardContent className="p-5 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-semibold text-sm">{p.title}</h4>
-                      <StatusBadge status={p.stage} />
-                    </div>
+                <Link key={p.id} to={`/projects/${p.id}`}>
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-5 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-semibold text-sm hover:text-sky-600 transition-colors">{p.title}</h4>
+                        <StatusBadge status={p.stage} />
+                      </div>
                     {p.description && <p className="text-xs text-muted-foreground line-clamp-2">{p.description}</p>}
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <span className="text-xs text-muted-foreground">{p.assigned_to || "Unassigned"}</span>
-                      {p.due_date && <span className="text-xs text-muted-foreground">{new Date(p.due_date).toLocaleDateString()}</span>}
-                    </div>
-                  </CardContent>
-                </Card>
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-xs text-muted-foreground">{p.assigned_to || "Unassigned"}</span>
+                        {p.due_date && <span className="text-xs text-muted-foreground">{new Date(p.due_date).toLocaleDateString()}</span>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}

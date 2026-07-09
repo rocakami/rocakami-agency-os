@@ -74,7 +74,14 @@ export default function ProjectDetail() {
 
   const generalFields = [
     { label: "Project ID", value: project.project_id || "—" },
-    { label: "Client", value: project.client_name || "—" },
+    { label: "Client", value: project.client_name ? (
+      (() => {
+        const client = clients.find((c) => (c.company_name || c.name) === project.client_name);
+        return client ? (
+          <Link to={`/clients/${client.id}`} className="text-sky-600 hover:underline">{project.client_name}</Link>
+        ) : project.client_name;
+      })()
+    ) : "—" },
     { label: "Stage", value: <StatusBadge status={project.stage} /> },
     { label: "Project Type", value: project.project_type || "—" },
     { label: "Priority", value: <StatusBadge status={project.priority} /> },
