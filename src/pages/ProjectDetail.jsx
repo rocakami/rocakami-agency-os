@@ -9,6 +9,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import ProjectFormDialog from "@/components/client-delivery/ProjectFormDialog";
 import ProjectTasks from "@/components/client-delivery/ProjectTasks";
 import ProjectGantt from "@/components/client-delivery/ProjectGantt";
+import ProjectNotes from "@/components/client-delivery/ProjectNotes";
 
 const STAGES = ["Intake", "Discovery", "Proposal", "Onboarding", "Active", "Closure"];
 
@@ -242,6 +243,20 @@ export default function ProjectDetail() {
       <Card className="border-0 shadow-sm mb-6">
         <CardContent className="py-6">
           <ProjectTasks projectId={id} onTasksChanged={load} />
+        </CardContent>
+      </Card>
+
+      {/* Notes Section */}
+      <Card className="border-0 shadow-sm mb-6">
+        <CardContent className="py-6">
+          <h3 className="font-bold text-xs uppercase tracking-wide text-muted-foreground mb-4">Notes</h3>
+          {project.internal_notes && (
+            <div className="mb-4 pb-4 border-b">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Internal Notes</p>
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{project.internal_notes}</p>
+            </div>
+          )}
+          <ProjectNotes projectId={id} />
         </CardContent>
       </Card>
 

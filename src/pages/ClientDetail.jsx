@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import ClientNotes from "@/components/client-delivery/ClientNotes";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function ClientDetail() {
@@ -188,14 +189,15 @@ export default function ClientDetail() {
               </Card>
             )}
 
-            {client.notes && (
-              <Card className="border-0 shadow-sm sm:col-span-2">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-3">Notes</h3>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{client.notes}</p>
-                </CardContent>
-              </Card>
-            )}
+            <Card className="border-0 shadow-sm sm:col-span-2">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide mb-3">Notes</h3>
+                {client.notes && (
+                  <p className="text-sm text-foreground whitespace-pre-wrap mb-4 pb-4 border-b">{client.notes}</p>
+                )}
+                <ClientNotes clientId={id} />
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
