@@ -11,6 +11,7 @@ import RevenueChart from "@/components/project-overview/RevenueChart";
 import RecentClientActivity from "@/components/project-overview/RecentClientActivity";
 import UpcomingDeadlines from "@/components/project-overview/UpcomingDeadlines";
 import TeamWorkload from "@/components/project-overview/TeamWorkload";
+import TeamTasksSection from "@/components/project-overview/TeamTasksSection";
 
 const RANGES = [
   { label: "Last 7 days", days: 7 },
@@ -139,6 +140,9 @@ export default function ProjectOverview() {
         <UpcomingDeadlines projects={projects} tasks={tasks} />
         <TeamWorkload contractors={contractors} tasks={tasks} />
       </div>
+
+      {/* Team Tasks & Completion */}
+      <TeamTasksSection tasks={tasks} projects={projects} clients={clients} contractors={contractors} />
 
       {/* Quick Links */}
       <div className="flex flex-wrap gap-3 pt-2">
