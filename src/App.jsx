@@ -20,6 +20,7 @@ import SOPDetail from '@/pages/SOPDetail';
 import Documents from '@/pages/Documents';
 import Onboarding from '@/pages/Onboarding';
 import ClientDelivery from '@/pages/ClientDelivery';
+import MyTasks from '@/pages/MyTasks';
 import ProjectDetail from '@/pages/ProjectDetail';
 import ProjectOverview from '@/pages/ProjectOverview';
 import ClientDirectory from '@/pages/ClientDirectory';
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
           <Route path="/documents" element={<Documents />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/client-delivery" element={<ClientDelivery />} />
+          <Route path="/my-tasks" element={<MyTasks />} />
           <Route path="/projectoverview" element={<ProjectOverview />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/clients" element={<ClientDirectory />} />

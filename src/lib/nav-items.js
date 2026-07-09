@@ -1,12 +1,13 @@
 import {
   LayoutDashboard, BookOpen, FolderOpen, Users, Briefcase, UserCheck,
-  Building2, Wrench, GraduationCap, Megaphone
+  Building2, Wrench, GraduationCap, Megaphone, CheckSquare
 } from "lucide-react";
 
-export const DEFAULT_NEW_USER_PATHS = '/,/announcements,/sops,/documents,/onboarding,/tools,/training';
+export const DEFAULT_NEW_USER_PATHS = '/,/announcements,/sops,/documents,/onboarding,/tools,/training,/my-tasks';
 
 export const navItems = [
   { label: "Dashboard", path: "/", icon: LayoutDashboard },
+  { label: "My Tasks", path: "/my-tasks", icon: CheckSquare },
   { label: "SOP Library", path: "/sops", icon: BookOpen },
   { label: "Documents", path: "/documents", icon: FolderOpen },
   { label: "Onboarding", path: "/onboarding", icon: Users },

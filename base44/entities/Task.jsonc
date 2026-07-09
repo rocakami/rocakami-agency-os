@@ -46,6 +46,13 @@
     },
     "project_id": {
       "type": "string"
+    },
+    "is_personal": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_by_user_id": {
+      "type": "string"
     }
   },
   "required": [
