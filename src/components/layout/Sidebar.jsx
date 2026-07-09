@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Shield, Globe, Briefcase, UserCircle, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, Globe, Briefcase, UserCircle, LogOut, Instagram, Linkedin, Facebook } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 import { getNavIcon as getIcon } from "@/lib/nav-icons";
@@ -14,6 +14,7 @@ export default function Sidebar() {
   const [allowedPaths, setAllowedPaths] = useState(null); // null = all allowed
   const [permsLoaded, setPermsLoaded] = useState(false);
   const [navSections, setNavSections] = useState([]);
+  const [companyProfile, setCompanyProfile] = useState(null);
   const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
 
   useEffect(() => {
@@ -33,6 +34,9 @@ export default function Sidebar() {
         }
         const secs = await base44.entities.NavSection.list("order");
         setNavSections(secs);
+
+        const profiles = await base44.entities.CompanyProfile.list();
+        if (profiles.length > 0) setCompanyProfile(profiles[0]);
 
         // Count unread announcements (newer than last viewed timestamp)
         const lastViewed = localStorage.getItem("announcements_last_viewed");
@@ -65,6 +69,14 @@ export default function Sidebar() {
   useEffect(() => {
     const unsubscribe = base44.entities.NavSection.subscribe(() => {
       base44.entities.NavSection.list("order").then(setNavSections).catch(() => {});
+    });
+    return unsubscribe;
+  }, []);
+
+  // Auto-refresh when company profile changes
+  useEffect(() => {
+    const unsubscribe = base44.entities.CompanyProfile.subscribe(() => {
+      base44.entities.CompanyProfile.list().then((p) => { if (p.length > 0) setCompanyProfile(p[0]); }).catch(() => {});
     });
     return unsubscribe;
   }, []);
@@ -170,46 +182,40 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* ROCAKAMI links (all users) */}
+      {/* Company & Social links (icon row) */}
       <div className="px-2 pb-1 pt-2 border-t border-white/10">
-        {!collapsed && (
-          <>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-            >
-              <Briefcase className="w-[18px] h-[18px] shrink-0" />
-              <span>ROCAKAMI Job Board</span>
+        <div className="flex items-center justify-center flex-wrap gap-0.5">
+          {companyProfile?.job_board_url && (
+            <a href={companyProfile.job_board_url} target="_blank" rel="noopener noreferrer" title="Job Board"
+              className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <Briefcase className="w-[18px] h-[18px]" />
             </a>
-            <a
-              href="https://www.rocakami.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-            >
-              <Globe className="w-[18px] h-[18px] shrink-0" />
-              <span>ROCAKAMI Website</span>
+          )}
+          {companyProfile?.website_url && (
+            <a href={companyProfile.website_url} target="_blank" rel="noopener noreferrer" title="Website"
+              className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <Globe className="w-[18px] h-[18px]" />
             </a>
-          </>
-        )}
-        {collapsed && (
-          <>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-            >
-              <Briefcase className="w-[18px] h-[18px] shrink-0" />
+          )}
+          {companyProfile?.instagram_url && (
+            <a href={companyProfile.instagram_url} target="_blank" rel="noopener noreferrer" title="Instagram"
+              className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <Instagram className="w-[18px] h-[18px]" />
             </a>
-            <a
-              href="https://www.rocakami.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-white/70 hover:text-white hover:bg-white/10 mb-0.5"
-            >
-              <Globe className="w-[18px] h-[18px] shrink-0" />
+          )}
+          {companyProfile?.linkedin_url && (
+            <a href={companyProfile.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn"
+              className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <Linkedin className="w-[18px] h-[18px]" />
             </a>
-          </>
-        )}
+          )}
+          {companyProfile?.facebook_url && (
+            <a href={companyProfile.facebook_url} target="_blank" rel="noopener noreferrer" title="Facebook"
+              className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <Facebook className="w-[18px] h-[18px]" />
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Profile link (all users) */}

@@ -1,0 +1,27 @@
+{
+  "name": "CompanyProfile",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "job_board_url": {
+      "type": "string"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "facebook_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_name"
+  ]
+}

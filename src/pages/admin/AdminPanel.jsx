@@ -13,6 +13,7 @@ import AdminNavCategories from "@/components/admin/AdminNavCategories";
 import AdminPrefixes from "@/components/admin/AdminPrefixes";
 import AdminSopCategories from "@/components/admin/AdminSopCategories";
 import AdminDropdownOptions from "@/components/admin/AdminDropdownOptions";
+import AdminCompanyProfile from "@/components/admin/AdminCompanyProfile";
 
 export default function AdminPanel() {
   return (
@@ -31,6 +32,7 @@ export default function AdminPanel() {
           <TabsTrigger value="permissions" className="text-xs">Permissions</TabsTrigger>
           <TabsTrigger value="nav-categories" className="text-xs">Nav Categories</TabsTrigger>
           <TabsTrigger value="prefixes" className="text-xs">Dept Prefixes</TabsTrigger>
+          <TabsTrigger value="company" className="text-xs">Company Profile</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sops"><AdminSOPs /></TabsContent>
@@ -49,6 +51,7 @@ export default function AdminPanel() {
             <AdminDropdownOptions />
           </div>
         </TabsContent>
+        <TabsContent value="company"><AdminCompanyProfile /></TabsContent>
       </Tabs>
     </div>
   );
