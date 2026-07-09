@@ -134,7 +134,7 @@ export default function AdminPermissions() {
     const newRole = user.role === "admin" ? "user" : "admin";
     setSaving(true);
     try {
-      await base44.entities.User.update(user.id, { role: newRole });
+      await base44.functions.invoke('listUsers', { action: 'setRole', targetUserId: user.id, role: newRole });
       setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
       toast({ title: newRole === "admin" ? "Admin access granted" : "Admin access removed" });
     } catch (e) {
