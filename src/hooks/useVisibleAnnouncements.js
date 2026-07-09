@@ -66,3 +66,20 @@ export function useVisibleAnnouncements() {
 
   return { announcements, loading };
 }
+
+export function getUnreadCount(announcements) {
+  try {
+    const seen = JSON.parse(localStorage.getItem("announcements_seen_ids") || "[]");
+    const seenSet = new Set(seen);
+    return announcements.filter((a) => !seenSet.has(a.id)).length;
+  } catch {
+    return announcements.length;
+  }
+}
+
+export function markAnnouncementsSeen(announcements) {
+  try {
+    const ids = announcements.map((a) => a.id);
+    localStorage.setItem("announcements_seen_ids", JSON.stringify(ids));
+  } catch { /* ignore */ }
+}

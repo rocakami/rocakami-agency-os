@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
-import { useVisibleAnnouncements } from "@/hooks/useVisibleAnnouncements";
+import { useVisibleAnnouncements, markAnnouncementsSeen } from "@/hooks/useVisibleAnnouncements";
+import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 
 export default function Announcements() {
   const { announcements, loading } = useVisibleAnnouncements();
@@ -13,9 +14,9 @@ export default function Announcements() {
 
   useEffect(() => {
     if (!loading) {
-      localStorage.setItem("announcements_last_viewed", new Date().toISOString());
+      markAnnouncementsSeen(announcements);
     }
-  }, [loading]);
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = announcements.filter((a) => catFilter === "All" || a.category === catFilter);
   const pinned = filtered.filter((a) => a.pinned);
@@ -45,41 +46,10 @@ export default function Announcements() {
       ) : (
         <div className="space-y-4">
           {pinned.map((a) => (
-            <Card key={a.id} className="border-0 shadow-sm border-l-4 border-l-sky-400">
-              <CardContent className="py-5 px-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Pin className="w-3.5 h-3.5 text-sky-500" />
-                      <h3 className="font-bold text-base">{a.title}</h3>
-                      <StatusBadge status={a.priority} />
-                      {a.category && <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{a.category}</span>}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{a.content}</p>
-                  </div>
-                  <span className="text-[11px] text-muted-foreground whitespace-nowrap">{new Date(a.created_date).toLocaleDateString()}</span>
-                </div>
-                {a.author && <p className="text-[11px] text-muted-foreground mt-3">— {a.author}</p>}
-              </CardContent>
-            </Card>
+            <AnnouncementCard key={a.id} announcement={a} pinned />
           ))}
           {unpinned.map((a) => (
-            <Card key={a.id} className="border-0 shadow-sm">
-              <CardContent className="py-5 px-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold">{a.title}</h3>
-                      <StatusBadge status={a.priority} />
-                      {a.category && <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{a.category}</span>}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{a.content}</p>
-                  </div>
-                  <span className="text-[11px] text-muted-foreground whitespace-nowrap">{new Date(a.created_date).toLocaleDateString()}</span>
-                </div>
-                {a.author && <p className="text-[11px] text-muted-foreground mt-3">— {a.author}</p>}
-              </CardContent>
-            </Card>
+            <AnnouncementCard key={a.id} announcement={a} />
           ))}
         </div>
       )}

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Shield, Globe, Briefcase, UserCircle, LogOut, Instagram, Linkedin, Facebook } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
-import { useVisibleAnnouncements } from "@/hooks/useVisibleAnnouncements";
+import { useVisibleAnnouncements, getUnreadCount, markAnnouncementsSeen } from "@/hooks/useVisibleAnnouncements";
 import { getNavIcon as getIcon } from "@/lib/nav-icons";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2ba9e7065_image.png";
@@ -17,7 +17,7 @@ export default function Sidebar() {
   const [navSections, setNavSections] = useState([]);
   const [companyProfile, setCompanyProfile] = useState(null);
   const { announcements: visibleAnnouncements } = useVisibleAnnouncements();
-  const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
+  const unreadAnnouncements = getUnreadCount(visibleAnnouncements);
 
   useEffect(() => {
     const load = async () => {
@@ -45,15 +45,6 @@ export default function Sidebar() {
     };
     load();
   }, []);
-
-  // Compute unread count from visibility-filtered announcements
-  useEffect(() => {
-    const lastViewed = localStorage.getItem("announcements_last_viewed");
-    const unread = lastViewed
-      ? visibleAnnouncements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
-      : visibleAnnouncements.length;
-    setUnreadAnnouncements(unread);
-  }, [visibleAnnouncements]);
 
   // Auto-refresh when nav sections change in the database
   useEffect(() => {
@@ -144,8 +135,7 @@ export default function Sidebar() {
                       to={item.path}
                       onClick={() => {
                         if (item.path === "/announcements") {
-                          localStorage.setItem("announcements_last_viewed", new Date().toISOString());
-                          setUnreadAnnouncements(0);
+                          markAnnouncementsSeen(visibleAnnouncements);
                         }
                       }}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
 import { getNavIcon } from "@/lib/nav-icons";
-import { useVisibleAnnouncements } from "@/hooks/useVisibleAnnouncements";
+import { useVisibleAnnouncements, getUnreadCount, markAnnouncementsSeen } from "@/hooks/useVisibleAnnouncements";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { LayoutDashboard, MoreHorizontal, UserCircle, Shield, Grid3x3 } from "lucide-react";
 
@@ -40,12 +40,7 @@ export default function MobileBottomNav() {
     load();
   }, []);
 
-  const unread = (() => {
-    const lastViewed = localStorage.getItem("announcements_last_viewed");
-    return lastViewed
-      ? visibleAnnouncements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
-      : visibleAnnouncements.length;
-  })();
+  const unread = getUnreadCount(visibleAnnouncements);
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
@@ -71,7 +66,7 @@ export default function MobileBottomNav() {
 
   const handleNavClick = (path) => {
     if (path === "/announcements") {
-      localStorage.setItem("announcements_last_viewed", new Date().toISOString());
+      markAnnouncementsSeen(visibleAnnouncements);
     }
     setMoreOpen(false);
   };

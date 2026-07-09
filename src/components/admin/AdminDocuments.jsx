@@ -101,9 +101,9 @@ export default function AdminDocuments() {
             <Input placeholder="Owner" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} />
             <div>
               <label className="block text-sm font-medium mb-1">File</label>
-              <input type="file" onChange={handleUpload} className="text-sm" />
-              {uploading && <p className="text-xs text-muted-foreground mt-1">Uploading…</p>}
-              {form.file_url && <p className="text-xs text-sky-600 mt-1 truncate">{form.file_url}</p>}
+              <input type="file" onChange={handleUpload} className="text-sm mb-2" />
+              {uploading && <p className="text-xs text-muted-foreground mb-1">Uploading…</p>}
+              <Input placeholder="Or paste a file link / URL" value={form.file_url || ""} onChange={(e) => setForm({ ...form, file_url: e.target.value })} />
             </div>
             <Button onClick={save} className="w-full">{editing ? "Update" : "Create"}</Button>
           </div>
