@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Pencil, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, Pencil, Loader2, Lock, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
@@ -95,6 +95,11 @@ export default function ProjectDetail() {
     ) : "—" },
     { label: "Start Date", value: fmtDate(project.start_date) },
     { label: "Due Date", value: fmtDate(project.due_date) },
+    { label: "Drive Folder", value: project.folder_url ? (
+      <a href={project.folder_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sky-600 hover:underline">
+        Open Folder <ExternalLink className="w-3 h-3" />
+      </a>
+    ) : "—" },
   ];
 
   const adminFields = [
