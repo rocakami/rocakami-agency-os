@@ -1,0 +1,23 @@
+{
+  "name": "DropdownOption",
+  "type": "object",
+  "properties": {
+    "dropdown_name": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "dropdown_name",
+    "label"
+  ]
+}

@@ -17,8 +17,6 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { useToast } from "@/components/ui/use-toast";
 
-const STATUSES = ["Prospect", "Onboarding", "Active", "Churned"];
-
 export default function ClientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -30,6 +28,7 @@ export default function ClientDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({});
   const [generatingFolder, setGeneratingFolder] = useState(false);
+  const [statuses, setStatuses] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -54,6 +53,7 @@ export default function ClientDetail() {
         ));
       })
       .finally(() => setLoading(false));
+    base44.entities.DropdownOption.filter({ dropdown_name: "Client Status" }, "order").then(setStatuses).catch(() => {});
   }, [id]);
 
   const save = async () => {
@@ -275,7 +275,7 @@ export default function ClientDetail() {
               <Input placeholder="Website" value={form.website || ""} onChange={(e) => setForm({ ...form, website: e.target.value })} />
               <Select value={form.status || "Prospect"} onValueChange={(v) => setForm({ ...form, status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{statuses.map((s) => <SelectItem key={s.id} value={s.label}>{s.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">

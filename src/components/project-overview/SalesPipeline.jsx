@@ -1,20 +1,22 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-const STAGES = [
-  { key: "Intake", label: "New Lead", color: "#3B82F6" },
-  { key: "Discovery", label: "Discovery Call", color: "#8B5CF6" },
-  { key: "Proposal", label: "Proposal Sent", color: "#F97316" },
-  { key: "Onboarding", label: "Negotiation", color: "#EAB308" },
-  { key: "Active", label: "Won", color: "#10B981" },
-  { key: "Closure", label: "Closed", color: "#EF4444" },
-];
+const FALLBACK_COLORS = ["#3B82F6", "#8B5CF6", "#F97316", "#EAB308", "#10B981", "#EF4444", "#06B6D4", "#EC4899"];
 
 export default function SalesPipeline({ projects }) {
-  const data = STAGES.map((s) => {
-    const count = projects.filter((p) => p.stage === s.key).length;
-    return { ...s, count };
+  const [stages, setStages] = useState([]);
+
+  useEffect(() => {
+    base44.entities.DropdownOption.filter({ dropdown_name: "Pipeline Status" }, "order")
+      .then(setStages)
+      .catch(() => {});
+  }, []);
+
+  const data = stages.map((s, i) => {
+    const count = projects.filter((p) => p.stage === s.label).length;
+    return { key: s.label, label: s.label, color: s.color || FALLBACK_COLORS[i % FALLBACK_COLORS.length], count };
   }).filter((d) => d.count > 0);
 
   const total = projects.length;

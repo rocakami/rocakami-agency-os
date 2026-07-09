@@ -12,6 +12,7 @@ import AdminPermissions from "@/components/admin/AdminPermissions";
 import AdminNavCategories from "@/components/admin/AdminNavCategories";
 import AdminPrefixes from "@/components/admin/AdminPrefixes";
 import AdminSopCategories from "@/components/admin/AdminSopCategories";
+import AdminDropdownOptions from "@/components/admin/AdminDropdownOptions";
 
 export default function AdminPanel() {
   return (
@@ -45,6 +46,7 @@ export default function AdminPanel() {
           <div className="space-y-8">
             <AdminPrefixes />
             <AdminSopCategories />
+            <AdminDropdownOptions />
           </div>
         </TabsContent>
       </Tabs>

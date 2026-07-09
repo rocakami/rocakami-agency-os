@@ -8,10 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 
-const STAGES = ["Intake", "Discovery", "Proposal", "Onboarding", "Active", "Closure"];
 const PRIORITIES = ["Low", "Medium", "High"];
 const TYPES = ["Website", "SEO", "Branding", "Marketing", "CRM & GHL", "Automation", "Other"];
-const BILLING = ["Not Billed", "Partially Billed", "Fully Billed", "Overdue"];
 
 const EMPTY = {
   title: "", project_id: "", client_name: "", stage: "Intake", description: "",
@@ -24,6 +22,8 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [contractors, setContractors] = useState([]);
+  const [stages, setStages] = useState([]);
+  const [billingStatuses, setBillingStatuses] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,6 +37,8 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
         }).catch(() => {});
       }
       base44.entities.Contractor.list().then(setContractors).catch(() => {});
+      base44.entities.DropdownOption.filter({ dropdown_name: "Pipeline Status" }, "order").then(setStages).catch(() => {});
+      base44.entities.DropdownOption.filter({ dropdown_name: "Billing Status" }, "order").then(setBillingStatuses).catch(() => {});
     }
   }, [open, editing]);
 
@@ -116,7 +118,7 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
             <div className="grid grid-cols-2 gap-3">
               <Select value={form.stage} onValueChange={(v) => set("stage", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{stages.map((s) => <SelectItem key={s.id} value={s.label}>{s.label}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={form.project_type} onValueChange={(v) => set("project_type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -175,10 +177,6 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
                 <Input type="date" value={form.due_date || ""} onChange={(e) => set("due_date", e.target.value)} />
               </div>
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Progress: {form.progress}%</label>
-              <Input type="range" min="0" max="100" value={form.progress} onChange={(e) => set("progress", e.target.value)} />
-            </div>
             <Textarea placeholder="Description" value={form.description || ""} onChange={(e) => set("description", e.target.value)} />
           </div>
 
@@ -196,7 +194,7 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
             </div>
             <Select value={form.billing_status} onValueChange={(v) => set("billing_status", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{BILLING.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+              <SelectContent>{billingStatuses.map((b) => <SelectItem key={b.id} value={b.label}>{b.label}</SelectItem>)}</SelectContent>
             </Select>
             <Textarea placeholder="Internal notes (visible to managers only)" value={form.internal_notes || ""} onChange={(e) => set("internal_notes", e.target.value)} />
           </div>

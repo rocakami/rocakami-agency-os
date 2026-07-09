@@ -14,8 +14,6 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { useToast } from "@/components/ui/use-toast";
 
-const STATUSES = ["Prospect", "Onboarding", "Active", "Churned"];
-
 const emptyForm = {
   name: "", company_name: "", primary_contact: "", email: "", phone: "",
   website: "", address: "", industry: "", status: "Prospect",
@@ -32,10 +30,14 @@ export default function ClientDirectory() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [generatingId, setGeneratingId] = useState(null);
+  const [statuses, setStatuses] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Client.list("-created_date").then(setItems).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    base44.entities.DropdownOption.filter({ dropdown_name: "Client Status" }, "order").then(setStatuses).catch(() => {});
+  }, []);
 
   const filtered = items.filter((c) =>
     !search ||
@@ -193,7 +195,7 @@ export default function ClientDirectory() {
                 <Input placeholder="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>{statuses.map((s) => <SelectItem key={s.id} value={s.label}>{s.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <Textarea placeholder="Company address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-3" />
