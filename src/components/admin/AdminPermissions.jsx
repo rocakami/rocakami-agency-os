@@ -31,7 +31,9 @@ export default function AdminPermissions() {
       if (userList.length > 0) setSelectedUserId(userList[0].id);
     } catch (e) {
       console.error("Failed to load users:", e);
-      setUserError(e?.response?.data?.error || e?.message || "Failed to load staff members");
+      const errData = e?.response?.data || {};
+      const steps = errData.steps ? ` [${errData.steps.join(" | ")}]` : "";
+      setUserError((errData.error || e?.message || "Failed to load staff members") + steps);
     }
 
     try {

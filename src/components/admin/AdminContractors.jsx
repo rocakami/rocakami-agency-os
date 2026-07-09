@@ -26,13 +26,14 @@ export default function AdminContractors() {
 
   const load = async () => {
     try {
-      const [contractorList, userList, permList, sectionList, trainingList] = await Promise.all([
+      const [contractorList, userListRes, permList, sectionList, trainingList] = await Promise.all([
         base44.entities.Contractor.list("-created_date"),
-        base44.entities.User.list("-created_date"),
+        base44.functions.invoke('listUsers', {}).catch(() => ({ data: [] })),
         base44.entities.NavPermission.list("-created_date"),
         base44.entities.OnboardingSection.list("order"),
         base44.entities.Training.list("order"),
       ]);
+      const userList = userListRes?.data || userListRes || [];
       setItems(contractorList);
       setUsers(userList);
       setOnboardingSections(sectionList);
