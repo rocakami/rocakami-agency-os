@@ -30,6 +30,7 @@ export default function ClientDetail() {
   const [form, setForm] = useState({});
   const [generatingFolder, setGeneratingFolder] = useState(false);
   const [statuses, setStatuses] = useState([]);
+  const [industries, setIndustries] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -58,6 +59,7 @@ export default function ClientDetail() {
       })
       .finally(() => setLoading(false));
     base44.entities.DropdownOption.filter({ dropdown_name: "Client Status" }, "order").then(setStatuses).catch(() => {});
+    base44.entities.DropdownOption.filter({ dropdown_name: "Industry" }, "order").then(setIndustries).catch(() => {});
   }, [id]);
 
   const save = async () => {
@@ -274,7 +276,13 @@ export default function ClientDetail() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="Primary contact" value={form.primary_contact || ""} onChange={(e) => setForm({ ...form, primary_contact: e.target.value })} />
-              <Input placeholder="Industry" value={form.industry || ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
+              <Select value={form.industry || "__none"} onValueChange={(v) => setForm({ ...form, industry: v === "__none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Industry" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">— None —</SelectItem>
+                  {industries.map((i) => <SelectItem key={i.id} value={i.label}>{i.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="Email" value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} />

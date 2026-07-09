@@ -31,12 +31,14 @@ export default function ClientDirectory() {
   const [form, setForm] = useState(emptyForm);
   const [generatingId, setGeneratingId] = useState(null);
   const [statuses, setStatuses] = useState([]);
+  const [industries, setIndustries] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Client.list("-created_date").then(setItems).finally(() => setLoading(false));
   useEffect(() => {
     load();
     base44.entities.DropdownOption.filter({ dropdown_name: "Client Status" }, "order").then(setStatuses).catch(() => {});
+    base44.entities.DropdownOption.filter({ dropdown_name: "Industry" }, "order").then(setIndustries).catch(() => {});
   }, []);
 
   const filtered = items.filter((c) =>
@@ -189,7 +191,13 @@ export default function ClientDirectory() {
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Company Details</p>
               <div className="grid grid-cols-2 gap-3">
                 <Input placeholder="Company name *" value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
-                <Input placeholder="Industry" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
+                <Select value={form.industry || "__none"} onValueChange={(v) => setForm({ ...form, industry: v === "__none" ? "" : v })}>
+                  <SelectTrigger><SelectValue placeholder="Industry" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">— None —</SelectItem>
+                    {industries.map((i) => <SelectItem key={i.id} value={i.label}>{i.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-3 mt-3">
                 <Input placeholder="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />

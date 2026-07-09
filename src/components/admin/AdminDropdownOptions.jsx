@@ -11,6 +11,8 @@ const DROPDOWNS = [
   { name: "Client Status", description: "Options for the Client status dropdown (Prospect, Active, etc.)" },
   { name: "Billing Status", description: "Options for the Project billing status dropdown" },
   { name: "Pipeline Status", description: "Options for the Sales Pipeline / project stage dropdown" },
+  { name: "Industry", description: "Options for the Industry dropdown on client forms" },
+  { name: "Project Category", description: "Options for the Project Category/Type dropdown on project forms" },
 ];
 
 function DropdownManager({ dropdownName, description }) {
@@ -175,7 +177,7 @@ export default function AdminDropdownOptions() {
       <div>
         <h3 className="font-semibold">Dropdown Options</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Manage options for Client Status, Billing Status, and Pipeline Status dropdowns
+          Manage options for Client Status, Billing Status, Pipeline Status, Industry, and Project Category dropdowns
         </p>
       </div>
       {DROPDOWNS.map((dd) => (

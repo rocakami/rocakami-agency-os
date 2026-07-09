@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/components/ui/use-toast";
 
 const PRIORITIES = ["Low", "Medium", "High"];
-const TYPES = ["Website", "SEO", "Branding", "Marketing", "CRM & GHL", "Automation", "Other"];
 
 const EMPTY = {
   title: "", project_id: "", client_name: "", stage: "Intake", description: "",
@@ -24,6 +23,7 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
   const [contractors, setContractors] = useState([]);
   const [stages, setStages] = useState([]);
   const [billingStatuses, setBillingStatuses] = useState([]);
+  const [projectCategories, setProjectCategories] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
       base44.entities.Contractor.list().then(setContractors).catch(() => {});
       base44.entities.DropdownOption.filter({ dropdown_name: "Pipeline Status" }, "order").then(setStages).catch(() => {});
       base44.entities.DropdownOption.filter({ dropdown_name: "Billing Status" }, "order").then(setBillingStatuses).catch(() => {});
+      base44.entities.DropdownOption.filter({ dropdown_name: "Project Category" }, "order").then(setProjectCategories).catch(() => {});
     }
   }, [open, editing]);
 
@@ -122,7 +123,7 @@ export default function ProjectFormDialog({ open, onOpenChange, editing, clients
               </Select>
               <Select value={form.project_type} onValueChange={(v) => set("project_type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                <SelectContent>{projectCategories.map((t) => <SelectItem key={t.id} value={t.label}>{t.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
