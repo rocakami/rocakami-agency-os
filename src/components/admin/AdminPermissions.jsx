@@ -20,21 +20,27 @@ export default function AdminPermissions() {
 
   useEffect(() => {
     const load = async () => {
+      // Fetch independently so one failing call doesn't hide the others
       try {
-        const [userList, permList, navSecs] = await Promise.all([
-          base44.entities.User.list("-created_date"),
-          base44.entities.NavPermission.list("-created_date"),
-          base44.entities.NavSection.list("order"),
-        ]);
+        const userList = await base44.entities.User.list("-created_date");
         setUsers(userList);
+        if (userList.length > 0) setSelectedUserId(userList[0].id);
+      } catch (e) { console.error("Failed to load users:", e); }
+
+      try {
+        const permList = await base44.entities.NavPermission.list("-created_date");
         const permMap = {};
         permList.forEach((p) => { permMap[p.user_id] = p; });
         setPermissions(permMap);
-        if (userList.length > 0) setSelectedUserId(userList[0].id);
+      } catch (e) { console.error("Failed to load permissions:", e); }
+
+      try {
+        const navSecs = await base44.entities.NavSection.list("order");
         if (navSecs.length > 0) {
           setAllNavItems(navSecs.map((s) => ({ ...s, icon: getNavIcon(s.icon) })));
         }
-      } catch (e) { console.error(e); }
+      } catch (e) { console.error("Failed to load nav sections:", e); }
+
       setLoading(false);
     };
     load();

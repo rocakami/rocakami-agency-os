@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Plus, Pencil, Trash2, Search, Building2, FolderOpen, ExternalLink, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Building2, FolderOpen, ExternalLink, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,14 +33,42 @@ export default function ClientDirectory() {
   const [generatingId, setGeneratingId] = useState(null);
   const [statuses, setStatuses] = useState([]);
   const [industries, setIndustries] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [sortField, setSortField] = useState("company_name");
+  const [sortDir, setSortDir] = useState("asc");
   const { toast } = useToast();
 
-  const load = () => base44.entities.Client.list("-created_date").then(setItems).finally(() => setLoading(false));
+  const load = () => {
+    base44.entities.Client.list("-created_date").then(setItems).finally(() => setLoading(false));
+    base44.entities.ClientProject.list("-created_date", 500).then(setProjects).catch(() => {});
+  };
   useEffect(() => {
     load();
     base44.entities.DropdownOption.filter({ dropdown_name: "Client Status" }, "order").then(setStatuses).catch(() => {});
     base44.entities.DropdownOption.filter({ dropdown_name: "Industry" }, "order").then(setIndustries).catch(() => {});
   }, []);
+
+  const getActiveProjectCount = (client) => {
+    const name = (client.company_name || client.name || "").toLowerCase();
+    return projects.filter((p) => {
+      const pName = (p.client_name || "").toLowerCase();
+      return pName === name && p.stage !== "Closure";
+    }).length;
+  };
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return <ArrowUpDown className="w-3 h-3 inline ml-1 text-muted-foreground/50" />;
+    return sortDir === "asc" ? <ArrowUp className="w-3 h-3 inline ml-1 text-navy-600" /> : <ArrowDown className="w-3 h-3 inline ml-1 text-navy-600" />;
+  };
 
   const filtered = items.filter((c) =>
     !search ||
@@ -49,6 +77,23 @@ export default function ClientDirectory() {
     c.primary_contact?.toLowerCase().includes(search.toLowerCase()) ||
     c.email?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const sorted = [...filtered].sort((a, b) => {
+    let valA, valB;
+    if (sortField === "company_name") {
+      valA = (a.company_name || a.name || "").toLowerCase();
+      valB = (b.company_name || b.name || "").toLowerCase();
+    } else if (sortField === "industry") {
+      valA = (a.industry || "").toLowerCase();
+      valB = (b.industry || "").toLowerCase();
+    } else if (sortField === "status") {
+      valA = (a.status || "").toLowerCase();
+      valB = (b.status || "").toLowerCase();
+    }
+    if (valA < valB) return sortDir === "asc" ? -1 : 1;
+    if (valA > valB) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  });
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setDialogOpen(true); };
 
@@ -103,7 +148,7 @@ export default function ClientDirectory() {
         <Input placeholder="Search by company, contact, or email…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
       </div>
 
-      {filtered.length === 0 ? (
+      {sorted.length === 0 ? (
         <EmptyState icon={Building2} title="No clients found" description="Add your first client to get started." />
       ) : (
         <Card className="border-0 shadow-sm overflow-hidden">
@@ -111,17 +156,18 @@ export default function ClientDirectory() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="font-semibold">Company</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none" onClick={() => toggleSort("company_name")}>Company <SortIcon field="company_name" /></TableHead>
                   <TableHead className="font-semibold">POC</TableHead>
-                  <TableHead className="font-semibold">Industry</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none" onClick={() => toggleSort("industry")}>Industry <SortIcon field="industry" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none" onClick={() => toggleSort("status")}>Status <SortIcon field="status" /></TableHead>
+                  <TableHead className="font-semibold text-center">Active Projects</TableHead>
                   <TableHead className="font-semibold">Website</TableHead>
                   <TableHead className="font-semibold">Folder</TableHead>
                   <TableHead className="font-semibold w-24">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((c) => (
+                {sorted.map((c) => (
                   <TableRow key={c.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => navigate(`/clients/${c.id}`)}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
@@ -145,6 +191,7 @@ export default function ClientDirectory() {
                     </TableCell>
                     <TableCell className="text-sm">{c.industry || "—"}</TableCell>
                     <TableCell><StatusBadge status={c.status} /></TableCell>
+                    <TableCell className="text-sm text-center font-medium">{getActiveProjectCount(c)}</TableCell>
                     <TableCell>
                       {c.website ? (
                         <a href={c.website.startsWith('http') ? c.website : `https://${c.website}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-sm text-[#1a3676] hover:underline">

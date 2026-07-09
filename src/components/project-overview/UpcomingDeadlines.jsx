@@ -29,6 +29,7 @@ export default function UpcomingDeadlines({ projects, tasks }) {
       const progress = ptasks.length > 0 ? Math.round((done / ptasks.length) * 100) : 0;
       return { ...p, daysLeft: daysUntil(p.due_date), progress };
     })
+    .filter((p) => p.progress < 100)
     .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
     .slice(0, 6);
 
