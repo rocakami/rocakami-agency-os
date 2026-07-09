@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Pencil, Trash2, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,23 +19,17 @@ export default function AdminDocuments() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ title: "", category: "Company Policies", description: "", owner: "", status: "Active", file_url: "" });
-  const [uploading, setUploading] = useState(false);
+  const [contractors, setContractors] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Document.list("-updated_date").then(setDocs).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    base44.entities.Contractor.list().then(setContractors).catch(() => {});
+  }, []);
 
   const openNew = () => { setEditing(null); setForm({ title: "", category: "Company Policies", description: "", owner: "", status: "Active", file_url: "" }); setDialogOpen(true); };
   const openEdit = (doc) => { setEditing(doc); setForm({ title: doc.title, category: doc.category, description: doc.description || "", owner: doc.owner || "", status: doc.status || "Active", file_url: doc.file_url || "" }); setDialogOpen(true); };
-
-  const handleUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setForm({ ...form, file_url });
-    setUploading(false);
-  };
 
   const save = async () => {
     if (!form.title) return;
@@ -98,12 +92,18 @@ export default function AdminDocuments() {
               </Select>
             </div>
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            <Input placeholder="Owner" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} />
+            <Select value={form.owner || "__none"} onValueChange={(v) => setForm({ ...form, owner: v === "__none" ? "" : v })}>
+              <SelectTrigger><SelectValue placeholder="Owner" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">— None —</SelectItem>
+                {contractors.map((c) => (
+                  <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div>
-              <label className="block text-sm font-medium mb-1">File</label>
-              <input type="file" onChange={handleUpload} className="text-sm mb-2" />
-              {uploading && <p className="text-xs text-muted-foreground mb-1">Uploading…</p>}
-              <Input placeholder="Or paste a file link / URL" value={form.file_url || ""} onChange={(e) => setForm({ ...form, file_url: e.target.value })} />
+              <label className="block text-sm font-medium mb-1 flex items-center gap-1"><Link2 className="w-3.5 h-3.5" /> File Link</label>
+              <Input placeholder="Paste file link / URL" value={form.file_url || ""} onChange={(e) => setForm({ ...form, file_url: e.target.value })} />
             </div>
             <Button onClick={save} className="w-full">{editing ? "Update" : "Create"}</Button>
           </div>

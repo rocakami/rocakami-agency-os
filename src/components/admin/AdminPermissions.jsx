@@ -25,12 +25,13 @@ export default function AdminPermissions() {
 
     // Fetch independently so one failing call doesn't hide the others
     try {
-      const userList = await base44.entities.User.list();
+      const res = await base44.functions.invoke('listUsers', {});
+      const userList = res.data || res;
       setUsers(userList);
       if (userList.length > 0) setSelectedUserId(userList[0].id);
     } catch (e) {
       console.error("Failed to load users:", e);
-      setUserError(e?.message || "Failed to load staff members");
+      setUserError(e?.response?.data?.error || e?.message || "Failed to load staff members");
     }
 
     try {
@@ -40,19 +41,23 @@ export default function AdminPermissions() {
       setPermissions(permMap);
     } catch (e) { console.error("Failed to load permissions:", e); }
 
-    try {
-      const navSecs = await base44.entities.NavSection.list("order");
-      if (navSecs.length > 0) {
-        setAllNavItems(navSecs.map((s) => ({ ...s, icon: getNavIcon(s.icon) })));
-      }
-    } catch (e) { console.error("Failed to load nav sections:", e); }
-
     setLoading(false);
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // Load nav sections separately (non-critical)
+  useEffect(() => {
+    base44.entities.NavSection.list("order")
+      .then((navSecs) => {
+        if (navSecs.length > 0) {
+          setAllNavItems(navSecs.map((s) => ({ ...s, icon: getNavIcon(s.icon) })));
+        }
+      })
+      .catch((e) => console.error("Failed to load nav sections:", e));
+  }, []);
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
   const permRecord = selectedUserId ? permissions[selectedUserId] : null;
