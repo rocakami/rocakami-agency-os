@@ -33,6 +33,22 @@
     "pinned": {
       "type": "boolean",
       "default": false
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "Everyone",
+        "Specific Staff",
+        "Managers & Leads"
+      ],
+      "default": "Everyone"
+    },
+    "target_user_ids": {
+      "type": "string"
+    },
+    "is_auto_generated": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

@@ -16,14 +16,15 @@ export default function AdminAnnouncements() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: "", content: "", category: "Company Update", priority: "Medium", author: "", pinned: false });
+  const [form, setForm] = useState({ title: "", content: "", category: "Company Update", priority: "Medium", author: "", pinned: false, visibility: "Everyone", target_user_ids: "" });
+  const [users, setUsers] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Announcement.list("-created_date").then(setItems).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); base44.entities.User.list().then(setUsers).catch(() => {}); }, []);
 
-  const openNew = () => { setEditing(null); setForm({ title: "", content: "", category: "Company Update", priority: "Medium", author: "", pinned: false }); setDialogOpen(true); };
-  const openEdit = (a) => { setEditing(a); setForm({ title: a.title, content: a.content, category: a.category || "Company Update", priority: a.priority || "Medium", author: a.author || "", pinned: a.pinned || false }); setDialogOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ title: "", content: "", category: "Company Update", priority: "Medium", author: "", pinned: false, visibility: "Everyone", target_user_ids: "" }); setDialogOpen(true); };
+  const openEdit = (a) => { setEditing(a); setForm({ title: a.title, content: a.content, category: a.category || "Company Update", priority: a.priority || "Medium", author: a.author || "", pinned: a.pinned || false, visibility: a.visibility || "Everyone", target_user_ids: a.target_user_ids || "" }); setDialogOpen(true); };
 
   const save = async () => {
     if (!form.title || !form.content) return;
@@ -43,13 +44,14 @@ export default function AdminAnnouncements() {
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow className="bg-muted/50"><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Priority</TableHead><TableHead>Pinned</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/50"><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Priority</TableHead><TableHead>Visible To</TableHead><TableHead>Pinned</TableHead><TableHead className="w-20">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((a) => (
               <TableRow key={a.id}>
                 <TableCell className="font-medium text-sm">{a.title}</TableCell>
                 <TableCell className="text-sm">{a.category}</TableCell>
                 <TableCell><StatusBadge status={a.priority} /></TableCell>
+                <TableCell className="text-sm">{a.visibility === "Specific Staff" ? `Specific (${(a.target_user_ids || "").split(",").filter(Boolean).length})` : (a.visibility === "Managers & Leads" ? "Mgmt & Leads" : (a.visibility || "Everyone"))}</TableCell>
                 <TableCell className="text-sm">{a.pinned ? "📌" : "—"}</TableCell>
                 <TableCell>
                   <div className="flex gap-1">
@@ -80,6 +82,36 @@ export default function AdminAnnouncements() {
               </Select>
             </div>
             <Input placeholder="Author" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} />
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Visible To</label>
+              <Select value={form.visibility} onValueChange={(v) => setForm({ ...form, visibility: v, target_user_ids: v === "Specific Staff" ? form.target_user_ids : "" })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Everyone">Everyone</SelectItem>
+                  <SelectItem value="Specific Staff">Specific Staff</SelectItem>
+                  <SelectItem value="Managers & Leads">Managers & Leads Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.visibility === "Specific Staff" && (
+              <div className="border rounded-lg p-3 max-h-44 overflow-y-auto space-y-1">
+                {users.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No users found.</p>}
+                {users.map((u) => {
+                  const ids = (form.target_user_ids || "").split(",").filter(Boolean);
+                  const checked = ids.includes(u.id);
+                  return (
+                    <label key={u.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 px-2 py-1 rounded">
+                      <input type="checkbox" checked={checked} onChange={(e) => {
+                        const next = e.target.checked ? [...ids, u.id] : ids.filter((id) => id !== u.id);
+                        setForm({ ...form, target_user_ids: next.join(",") });
+                      }} />
+                      <span>{u.full_name || u.email}</span>
+                      {u.role === "admin" && <span className="text-[10px] text-sky-600 font-medium">admin</span>}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Switch checked={form.pinned} onCheckedChange={(v) => setForm({ ...form, pinned: v })} />
               <span className="text-sm">Pin this announcement</span>

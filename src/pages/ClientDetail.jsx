@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Pencil, FolderOpen, Briefcase, UserCheck,
-  Mail, Phone, Globe, MapPin, Building2, ExternalLink, Loader2
+  Mail, Phone, Globe, MapPin, Building2, ExternalLink, Loader2, Calendar, CalendarClock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,12 +164,18 @@ export default function ClientDetail() {
                 {client.address && (
                   <div className="flex items-start gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground mt-0.5" /> {client.address}</div>
                 )}
+                {client.contract_start_date && (
+                  <div className="flex items-center gap-2 text-sm"><Calendar className="w-4 h-4 text-muted-foreground" /> Start: {new Date(client.contract_start_date).toLocaleDateString()}</div>
+                )}
+                {client.contract_expiration_date && (
+                  <div className="flex items-center gap-2 text-sm"><CalendarClock className="w-4 h-4 text-muted-foreground" /> Expires: {new Date(client.contract_expiration_date).toLocaleDateString()}</div>
+                )}
                 {client.drive_folder_url && (
                   <a href={client.drive_folder_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-sky-600 hover:underline">
                     <FolderOpen className="w-4 h-4" /> Open Drive Folder
                   </a>
                 )}
-                {!client.industry && !client.address && !client.drive_folder_url && (
+                {!client.industry && !client.address && !client.drive_folder_url && !client.contract_start_date && !client.contract_expiration_date && (
                   <p className="text-sm text-muted-foreground">No business info added.</p>
                 )}
               </CardContent>
@@ -304,6 +310,16 @@ export default function ClientDetail() {
               <Input placeholder="X (Twitter) URL" value={form.twitter_url || ""} onChange={(e) => setForm({ ...form, twitter_url: e.target.value })} />
             </div>
             <Input placeholder="YouTube URL" value={form.youtube_url || ""} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Contract Start</label>
+                <Input type="date" value={form.contract_start_date || ""} onChange={(e) => setForm({ ...form, contract_start_date: e.target.value })} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Contract Expiration</label>
+                <Input type="date" value={form.contract_expiration_date || ""} onChange={(e) => setForm({ ...form, contract_expiration_date: e.target.value })} />
+              </div>
+            </div>
             <Input placeholder="Drive folder URL (auto-generated)" value={form.drive_folder_url || ""} onChange={(e) => setForm({ ...form, drive_folder_url: e.target.value })} />
             <Textarea placeholder="Address" value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             <Textarea placeholder="Notes" value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} />

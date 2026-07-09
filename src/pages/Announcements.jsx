@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
 import { Megaphone, Pin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import { useVisibleAnnouncements } from "@/hooks/useVisibleAnnouncements";
 
 export default function Announcements() {
-  const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { announcements, loading } = useVisibleAnnouncements();
   const [catFilter, setCatFilter] = useState("All");
 
   useEffect(() => {
-    base44.entities.Announcement.list("-created_date").then((data) => {
-      setAnnouncements(data);
+    if (!loading) {
       localStorage.setItem("announcements_last_viewed", new Date().toISOString());
-    }).finally(() => setLoading(false));
-  }, []);
+    }
+  }, [loading]);
 
   const filtered = announcements.filter((a) => catFilter === "All" || a.category === catFilter);
   const pinned = filtered.filter((a) => a.pinned);

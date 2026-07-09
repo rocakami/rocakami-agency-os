@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Shield, Globe, Briefcase, UserCircle, LogOut, Instagram, Linkedin, Facebook } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { navItems } from "@/lib/nav-items";
+import { useVisibleAnnouncements } from "@/hooks/useVisibleAnnouncements";
 import { getNavIcon as getIcon } from "@/lib/nav-icons";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a4d446aeae59d6815f530f1/2ba9e7065_image.png";
@@ -15,6 +16,7 @@ export default function Sidebar() {
   const [permsLoaded, setPermsLoaded] = useState(false);
   const [navSections, setNavSections] = useState([]);
   const [companyProfile, setCompanyProfile] = useState(null);
+  const { announcements: visibleAnnouncements } = useVisibleAnnouncements();
   const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
 
   useEffect(() => {
@@ -38,32 +40,20 @@ export default function Sidebar() {
         const profiles = await base44.entities.CompanyProfile.list();
         if (profiles.length > 0) setCompanyProfile(profiles[0]);
 
-        // Count unread announcements (newer than last viewed timestamp)
-        const lastViewed = localStorage.getItem("announcements_last_viewed");
-        const announcements = await base44.entities.Announcement.list("-created_date", 50);
-        const unread = lastViewed
-          ? announcements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
-          : announcements.length;
-        setUnreadAnnouncements(unread);
       } catch (e) { /* default to all access on error */ }
       setPermsLoaded(true);
     };
     load();
   }, []);
 
-  // Subscribe to announcement changes to update unread count in real-time
+  // Compute unread count from visibility-filtered announcements
   useEffect(() => {
-    const unsubscribe = base44.entities.Announcement.subscribe(() => {
-      const lastViewed = localStorage.getItem("announcements_last_viewed");
-      base44.entities.Announcement.list("-created_date", 50).then((announcements) => {
-        const unread = lastViewed
-          ? announcements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
-          : announcements.length;
-        setUnreadAnnouncements(unread);
-      });
-    });
-    return unsubscribe;
-  }, []);
+    const lastViewed = localStorage.getItem("announcements_last_viewed");
+    const unread = lastViewed
+      ? visibleAnnouncements.filter((a) => new Date(a.created_date) > new Date(lastViewed)).length
+      : visibleAnnouncements.length;
+    setUnreadAnnouncements(unread);
+  }, [visibleAnnouncements]);
 
   // Auto-refresh when nav sections change in the database
   useEffect(() => {

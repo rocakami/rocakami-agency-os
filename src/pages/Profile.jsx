@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PageHeader from "@/components/shared/PageHeader";
 import ContractorFiles from "@/components/contractor/ContractorFiles";
+import AssignedOverview from "@/components/profile/AssignedOverview";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, User, Save, Badge, Link as LinkIcon, Calendar, ExternalLink, Briefcase, FileCheck } from "lucide-react";
 
@@ -223,6 +224,9 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Assigned Clients & Projects */}
+      <AssignedOverview contractorName={form.name || contractor?.name} contractorEmail={form.email} />
 
       {/* File Upload Section */}
       {contractor && (

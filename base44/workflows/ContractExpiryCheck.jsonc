@@ -1,0 +1,45 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "contract_expiry_check",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check_expiry": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "checkContractExpiry",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Check contract expiry",
+            "description": "Scan clients for upcoming expirations"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Warsaw",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Daily check for client contracts expiring within 2 weeks. Auto-creates announcements visible to managers, admins, and leads.",
+  "name": "Contract Expiry Check"
+}

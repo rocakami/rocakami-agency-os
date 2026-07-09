@@ -18,7 +18,8 @@ const emptyForm = {
   name: "", company_name: "", primary_contact: "", email: "", phone: "",
   website: "", address: "", industry: "", status: "Prospect",
   drive_folder_url: "", linkedin_url: "", facebook_url: "", instagram_url: "",
-  twitter_url: "", youtube_url: "", notes: ""
+  twitter_url: "", youtube_url: "", notes: "",
+  contract_start_date: "", contract_expiration_date: ""
 };
 
 export default function ClientDirectory() {
@@ -58,7 +59,8 @@ export default function ClientDirectory() {
       email: c.email || "", phone: c.phone || "", website: c.website || "", address: c.address || "",
       industry: c.industry || "", status: c.status || "Prospect", drive_folder_url: c.drive_folder_url || "",
       linkedin_url: c.linkedin_url || "", facebook_url: c.facebook_url || "", instagram_url: c.instagram_url || "",
-      twitter_url: c.twitter_url || "", youtube_url: c.youtube_url || "", notes: c.notes || ""
+      twitter_url: c.twitter_url || "", youtube_url: c.youtube_url || "", notes: c.notes || "",
+      contract_start_date: c.contract_start_date || "", contract_expiration_date: c.contract_expiration_date || ""
     });
     setDialogOpen(true);
   };
@@ -233,6 +235,20 @@ export default function ClientDirectory() {
               </div>
               <div className="grid grid-cols-2 gap-3 mt-3">
                 <Input placeholder="YouTube URL" value={form.youtube_url} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Contract</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Start Date</label>
+                  <Input type="date" value={form.contract_start_date || ""} onChange={(e) => setForm({ ...form, contract_start_date: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Expiration Date</label>
+                  <Input type="date" value={form.contract_expiration_date || ""} onChange={(e) => setForm({ ...form, contract_expiration_date: e.target.value })} />
+                </div>
               </div>
             </div>
 
