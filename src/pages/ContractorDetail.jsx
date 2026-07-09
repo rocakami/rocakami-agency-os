@@ -145,26 +145,31 @@ export default function ContractorDetail() {
               })}
             </div>
 
-            {contractor.assigned_clients && (
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Assigned Clients</p>
+            {(() => {
+              const projectClients = projects.map((p) => p.client_name).filter(Boolean);
+              const allClients = [...new Set([...parseClientsList(contractor.assigned_clients), ...projectClients])];
+              if (allClients.length === 0) return null;
+              return (
+                <div className="mt-4 pt-4 border-t">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">Assigned Clients</p>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {allClients.map((name) => {
+                      const client = clients.find((c) => (c.company_name || c.name) === name);
+                      return client ? (
+                        <Link key={name} to={`/clients/${client.id}`} className="text-xs bg-muted hover:bg-sky-100 hover:text-sky-700 rounded-full px-2 py-1 transition-colors">
+                          {name}
+                        </Link>
+                      ) : (
+                        <span key={name} className="text-xs bg-muted rounded-full px-2 py-1">{name}</span>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {parseClientsList(contractor.assigned_clients).map((name) => {
-                    const client = clients.find((c) => (c.company_name || c.name) === name);
-                    return client ? (
-                      <Link key={name} to={`/clients/${client.id}`} className="text-xs bg-muted hover:bg-sky-100 hover:text-sky-700 rounded-full px-2 py-1 transition-colors">
-                        {name}
-                      </Link>
-                    ) : (
-                      <span key={name} className="text-xs bg-muted rounded-full px-2 py-1">{name}</span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div className="mt-4 pt-4 border-t space-y-2">
               <div className="flex items-center gap-2">

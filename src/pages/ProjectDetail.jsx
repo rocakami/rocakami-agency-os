@@ -102,11 +102,15 @@ export default function ProjectDetail() {
     ) : "—" },
     { label: "Start Date", value: fmtDate(project.start_date) },
     { label: "Due Date", value: fmtDate(project.due_date) },
-    { label: "Drive Folder", value: project.folder_url ? (
-      <a href={project.folder_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sky-600 hover:underline">
-        Open Folder <ExternalLink className="w-3 h-3" />
-      </a>
-    ) : "—" },
+    { label: "Drive Folder", value: (() => {
+      const client = clients.find((c) => (c.company_name || c.name) === project.client_name);
+      const folderUrl = project.folder_url || client?.drive_folder_url;
+      return folderUrl ? (
+        <a href={folderUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sky-600 hover:underline">
+          Open Folder <ExternalLink className="w-3 h-3" />
+        </a>
+      ) : "—";
+    })() },
   ];
 
   const adminFields = [

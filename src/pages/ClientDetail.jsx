@@ -41,16 +41,19 @@ export default function ClientDetail() {
         setForm(c);
         const matchName = c.name?.toLowerCase();
         const matchCompany = c.company_name?.toLowerCase();
-        setProjects(projs.filter((p) =>
+        const clientProjects = projs.filter((p) =>
           p.client_name &&
           (p.client_name.toLowerCase() === matchName ||
             (matchCompany && p.client_name.toLowerCase() === matchCompany))
-        ));
-        setContractors(cons.filter((con) =>
-          con.assigned_clients &&
-          (con.assigned_clients.toLowerCase().includes(matchName) ||
-            (matchCompany && con.assigned_clients.toLowerCase().includes(matchCompany)))
-        ));
+        );
+        setProjects(clientProjects);
+        const assignedNames = [...new Set(clientProjects.flatMap((p) =>
+          (p.assigned_to || "").split(",").map((n) => n.trim()).filter(Boolean)
+        ))];
+        const staff = cons.filter((c) =>
+          c.name && assignedNames.some((n) => n.toLowerCase() === c.name.toLowerCase())
+        );
+        setContractors(staff);
       })
       .finally(() => setLoading(false));
     base44.entities.DropdownOption.filter({ dropdown_name: "Client Status" }, "order").then(setStatuses).catch(() => {});
@@ -226,7 +229,7 @@ export default function ClientDetail() {
         {/* Staff */}
         <TabsContent value="staff">
           {contractors.length === 0 ? (
-            <EmptyState icon={UserCheck} title="No staff assigned" description="Contractors assigned to this client will appear here." />
+            <EmptyState icon={UserCheck} title="No staff assigned" description="Staff assigned to this client's projects will appear here." />
           ) : (
             <Card className="border-0 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -242,7 +245,9 @@ export default function ClientDetail() {
                   <tbody>
                     {contractors.map((c) => (
                       <tr key={c.id} className="border-b hover:bg-muted/30">
-                        <td className="p-3 font-medium">{c.name}</td>
+                        <td className="p-3 font-medium">
+                          <Link to={`/contractors/${c.id}`} className="text-sky-600 hover:underline">{c.name}</Link>
+                        </td>
                         <td className="p-3">{c.role}</td>
                         <td className="p-3">{c.rate || "—"}</td>
                         <td className="p-3"><StatusBadge status={c.contract_status} /></td>
