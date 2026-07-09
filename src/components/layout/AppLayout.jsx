@@ -1,10 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { RefreshCw } from "lucide-react";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 
 export default function AppLayout() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    window.location.reload();
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -35,6 +43,16 @@ export default function AppLayout() {
         </div>
       </main>
       <MobileBottomNav />
+
+      {/* Refresh button */}
+      <button
+        onClick={handleRefresh}
+        disabled={refreshing}
+        title="Refresh app for updates"
+        className="fixed bottom-20 lg:bottom-6 right-4 z-40 w-11 h-11 rounded-full bg-navy-600 text-white shadow-lg hover:bg-navy-700 flex items-center justify-center transition-colors disabled:opacity-50"
+      >
+        <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+      </button>
     </div>
   );
 }

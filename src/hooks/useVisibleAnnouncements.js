@@ -25,7 +25,7 @@ export function useVisibleAnnouncements() {
       if (!a.visibility || a.visibility === "Everyone") return true;
       if (a.visibility === "Specific Staff") {
         const ids = (a.target_user_ids || "").split(",").map((s) => s.trim()).filter(Boolean);
-        return ids.includes(me.id);
+        return ids.includes(me.id) || (contractor && ids.includes(contractor.id));
       }
       if (a.visibility === "Managers & Leads") return isManagerOrLead;
       return true;

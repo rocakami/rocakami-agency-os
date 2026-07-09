@@ -17,11 +17,16 @@ export default function AdminAnnouncements() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ title: "", content: "", category: "Company Update", priority: "Medium", author: "", pinned: false, visibility: "Everyone", target_user_ids: "" });
-  const [users, setUsers] = useState([]);
+  const [contractors, setContractors] = useState([]);
   const { toast } = useToast();
 
   const load = () => base44.entities.Announcement.list("-created_date").then(setItems).finally(() => setLoading(false));
-  useEffect(() => { load(); base44.entities.User.list().then(setUsers).catch(() => {}); }, []);
+  useEffect(() => {
+    load();
+    base44.entities.Contractor.list().then(setContractors).catch(() => {});
+  }, []);
+
+  const managersAndLeads = contractors.filter((c) => c.employment_category === "Manager" || c.employment_category === "Lead");
 
   const openNew = () => { setEditing(null); setForm({ title: "", content: "", category: "Company Update", priority: "Medium", author: "", pinned: false, visibility: "Everyone", target_user_ids: "" }); setDialogOpen(true); };
   const openEdit = (a) => { setEditing(a); setForm({ title: a.title, content: a.content, category: a.category || "Company Update", priority: a.priority || "Medium", author: a.author || "", pinned: a.pinned || false, visibility: a.visibility || "Everyone", target_user_ids: a.target_user_ids || "" }); setDialogOpen(true); };
@@ -81,7 +86,15 @@ export default function AdminAnnouncements() {
                 <SelectContent>{["Low", "Medium", "High"].map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <Input placeholder="Author" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} />
+            <Select value={form.author || "__none"} onValueChange={(v) => setForm({ ...form, author: v === "__none" ? "" : v })}>
+              <SelectTrigger><SelectValue placeholder="Author (Managers & Leads)" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">— None —</SelectItem>
+                {managersAndLeads.map((c) => (
+                  <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Visible To</label>
               <Select value={form.visibility} onValueChange={(v) => setForm({ ...form, visibility: v, target_user_ids: v === "Specific Staff" ? form.target_user_ids : "" })}>
@@ -95,18 +108,18 @@ export default function AdminAnnouncements() {
             </div>
             {form.visibility === "Specific Staff" && (
               <div className="border rounded-lg p-3 max-h-44 overflow-y-auto space-y-1">
-                {users.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No users found.</p>}
-                {users.map((u) => {
+                {contractors.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No staff found.</p>}
+                {contractors.map((c) => {
                   const ids = (form.target_user_ids || "").split(",").filter(Boolean);
-                  const checked = ids.includes(u.id);
+                  const checked = ids.includes(c.id);
                   return (
-                    <label key={u.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 px-2 py-1 rounded">
+                    <label key={c.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 px-2 py-1 rounded">
                       <input type="checkbox" checked={checked} onChange={(e) => {
-                        const next = e.target.checked ? [...ids, u.id] : ids.filter((id) => id !== u.id);
+                        const next = e.target.checked ? [...ids, c.id] : ids.filter((id) => id !== c.id);
                         setForm({ ...form, target_user_ids: next.join(",") });
                       }} />
-                      <span>{u.full_name || u.email}</span>
-                      {u.role === "admin" && <span className="text-[10px] text-sky-600 font-medium">admin</span>}
+                      <span>{c.name}</span>
+                      {(c.employment_category === "Manager" || c.employment_category === "Lead") && <span className="text-[10px] text-sky-600 font-medium">{c.employment_category}</span>}
                     </label>
                   );
                 })}

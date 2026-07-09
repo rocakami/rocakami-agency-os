@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Wrench, ExternalLink, Search } from "lucide-react";
+import { Wrench, ExternalLink, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,8 @@ export default function ToolsDirectory() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("all");
+  const [sortField, setSortField] = useState("name");
+  const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
     base44.entities.ToolEntry.list().then(setTools).finally(() => setLoading(false));
@@ -27,6 +29,37 @@ export default function ToolsDirectory() {
       t.owner?.toLowerCase().includes(search.toLowerCase());
     const matchesOwner = ownerFilter === "all" || t.owner === ownerFilter;
     return matchesSearch && matchesOwner;
+  });
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  };
+
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) return <ArrowUpDown className="w-3 h-3 inline ml-1 text-muted-foreground/50" />;
+    return sortDir === "asc" ? <ArrowUp className="w-3 h-3 inline ml-1 text-navy-600" /> : <ArrowDown className="w-3 h-3 inline ml-1 text-navy-600" />;
+  };
+
+  const sorted = [...filtered].sort((a, b) => {
+    let valA, valB;
+    if (sortField === "name") {
+      valA = (a.name || "").toLowerCase();
+      valB = (b.name || "").toLowerCase();
+    } else if (sortField === "owner") {
+      valA = (a.owner || "").toLowerCase();
+      valB = (b.owner || "").toLowerCase();
+    } else if (sortField === "username") {
+      valA = (a.username || "").toLowerCase();
+      valB = (b.username || "").toLowerCase();
+    }
+    if (valA < valB) return sortDir === "asc" ? -1 : 1;
+    if (valA > valB) return sortDir === "asc" ? 1 : -1;
+    return 0;
   });
 
   if (loading) {
@@ -55,7 +88,7 @@ export default function ToolsDirectory() {
         )}
       </div>
 
-      {filtered.length === 0 ? (
+      {sorted.length === 0 ? (
         <EmptyState icon={Wrench} title="No tools found" description="Try adjusting your search or filter." />
       ) : (
         <Card className="border-0 shadow-sm overflow-hidden">
@@ -63,14 +96,16 @@ export default function ToolsDirectory() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="font-semibold">Tool Name</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none" onClick={() => toggleSort("name")}>Tool Name <SortIcon field="name" /></TableHead>
                   <TableHead className="font-semibold">URL</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none" onClick={() => toggleSort("username")}>Username <SortIcon field="username" /></TableHead>
+                  <TableHead className="font-semibold">Password</TableHead>
                   <TableHead className="font-semibold">Access</TableHead>
-                  <TableHead className="font-semibold">Owner</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none" onClick={() => toggleSort("owner")}>Owner <SortIcon field="owner" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((tool) => (
+                {sorted.map((tool) => (
                   <TableRow key={tool.id} className="hover:bg-muted/30">
                     <TableCell className="font-medium text-sm">
                       <div className="flex items-center gap-2">
@@ -88,6 +123,8 @@ export default function ToolsDirectory() {
                         </a>
                       ) : <span className="text-sm text-muted-foreground">—</span>}
                     </TableCell>
+                    <TableCell className="text-sm">{tool.username || "—"}</TableCell>
+                    <TableCell className="text-sm font-mono">{tool.password ? "••••••" : "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{tool.access_instructions || "—"}</TableCell>
                     <TableCell className="text-sm">{tool.owner || "—"}</TableCell>
                   </TableRow>

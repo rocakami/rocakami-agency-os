@@ -14,7 +14,7 @@ export default function AdminTools() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", purpose: "", access_instructions: "", owner: "", related_sops: "", best_practices: "", url: "" });
+  const [form, setForm] = useState({ name: "", purpose: "", access_instructions: "", owner: "", related_sops: "", best_practices: "", url: "", username: "", password: "" });
   const [contractors, setContractors] = useState([]);
   const [sops, setSops] = useState([]);
   const { toast } = useToast();
@@ -37,8 +37,8 @@ export default function AdminTools() {
     setForm({ ...form, related_sops: next.join(",") });
   };
 
-  const openNew = () => { setEditing(null); setForm({ name: "", purpose: "", access_instructions: "", owner: "", related_sops: "", best_practices: "", url: "" }); setDialogOpen(true); };
-  const openEdit = (t) => { setEditing(t); setForm({ name: t.name, purpose: t.purpose || "", access_instructions: t.access_instructions || "", owner: t.owner || "", related_sops: t.related_sops || "", best_practices: t.best_practices || "", url: t.url || "" }); setDialogOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ name: "", purpose: "", access_instructions: "", owner: "", related_sops: "", best_practices: "", url: "", username: "", password: "" }); setDialogOpen(true); };
+  const openEdit = (t) => { setEditing(t); setForm({ name: t.name, purpose: t.purpose || "", access_instructions: t.access_instructions || "", owner: t.owner || "", related_sops: t.related_sops || "", best_practices: t.best_practices || "", url: t.url || "", username: t.username || "", password: t.password || "" }); setDialogOpen(true); };
 
   const save = async () => {
     if (!form.name) return;
@@ -94,6 +94,10 @@ export default function AdminTools() {
               </SelectContent>
             </Select>
             <Input placeholder="URL" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+              <Input placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">REFERENCE — Related SOPs</label>
               <Select value="__placeholder__" onValueChange={toggleSop}>
