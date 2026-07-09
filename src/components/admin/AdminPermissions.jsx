@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { Shield, Check, Save, Crown } from "lucide-react";
+import { Shield, Check, Save, Crown, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -16,35 +16,43 @@ export default function AdminPermissions() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [allNavItems, setAllNavItems] = useState(navItems);
+  const [userError, setUserError] = useState(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const load = async () => {
-      // Fetch independently so one failing call doesn't hide the others
-      try {
-        const userList = await base44.entities.User.list("-created_date");
-        setUsers(userList);
-        if (userList.length > 0) setSelectedUserId(userList[0].id);
-      } catch (e) { console.error("Failed to load users:", e); }
+  const load = useCallback(async () => {
+    setLoading(true);
+    setUserError(null);
 
-      try {
-        const permList = await base44.entities.NavPermission.list("-created_date");
-        const permMap = {};
-        permList.forEach((p) => { permMap[p.user_id] = p; });
-        setPermissions(permMap);
-      } catch (e) { console.error("Failed to load permissions:", e); }
+    // Fetch independently so one failing call doesn't hide the others
+    try {
+      const userList = await base44.entities.User.list();
+      setUsers(userList);
+      if (userList.length > 0) setSelectedUserId(userList[0].id);
+    } catch (e) {
+      console.error("Failed to load users:", e);
+      setUserError(e?.message || "Failed to load staff members");
+    }
 
-      try {
-        const navSecs = await base44.entities.NavSection.list("order");
-        if (navSecs.length > 0) {
-          setAllNavItems(navSecs.map((s) => ({ ...s, icon: getNavIcon(s.icon) })));
-        }
-      } catch (e) { console.error("Failed to load nav sections:", e); }
+    try {
+      const permList = await base44.entities.NavPermission.list("-created_date");
+      const permMap = {};
+      permList.forEach((p) => { permMap[p.user_id] = p; });
+      setPermissions(permMap);
+    } catch (e) { console.error("Failed to load permissions:", e); }
 
-      setLoading(false);
-    };
-    load();
+    try {
+      const navSecs = await base44.entities.NavSection.list("order");
+      if (navSecs.length > 0) {
+        setAllNavItems(navSecs.map((s) => ({ ...s, icon: getNavIcon(s.icon) })));
+      }
+    } catch (e) { console.error("Failed to load nav sections:", e); }
+
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
   const permRecord = selectedUserId ? permissions[selectedUserId] : null;
@@ -137,8 +145,23 @@ export default function AdminPermissions() {
   if (users.length === 0) {
     return (
       <Card className="border-0 shadow-sm">
-        <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          No staff members found. Invite users from the dashboard to manage their permissions.
+        <CardContent className="py-10 text-center space-y-3">
+          {userError ? (
+            <>
+              <div className="flex justify-center"><AlertCircle className="w-8 h-8 text-destructive" /></div>
+              <p className="text-sm text-muted-foreground">Failed to load staff members: {userError}</p>
+              <Button variant="outline" size="sm" className="gap-1" onClick={load}>
+                <RefreshCw className="w-3.5 h-3.5" /> Retry
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">No staff members found. Invite users from the dashboard to manage their permissions.</p>
+              <Button variant="outline" size="sm" className="gap-1" onClick={load}>
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
     );

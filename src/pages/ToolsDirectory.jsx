@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
+import ToolDetailDialog from "@/components/tools/ToolDetailDialog";
 
 export default function ToolsDirectory() {
   const [tools, setTools] = useState([]);
@@ -15,6 +16,7 @@ export default function ToolsDirectory() {
   const [ownerFilter, setOwnerFilter] = useState("all");
   const [sortField, setSortField] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
+  const [selectedTool, setSelectedTool] = useState(null);
 
   useEffect(() => {
     base44.entities.ToolEntry.list().then(setTools).finally(() => setLoading(false));
@@ -106,7 +108,7 @@ export default function ToolsDirectory() {
               </TableHeader>
               <TableBody>
                 {sorted.map((tool) => (
-                  <TableRow key={tool.id} className="hover:bg-muted/30">
+                  <TableRow key={tool.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedTool(tool)}>
                     <TableCell className="font-medium text-sm">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-navy-600 text-white flex items-center justify-center shrink-0">
@@ -134,6 +136,8 @@ export default function ToolsDirectory() {
           </div>
         </Card>
       )}
+
+      <ToolDetailDialog tool={selectedTool} open={!!selectedTool} onOpenChange={(v) => !v && setSelectedTool(null)} />
     </div>
   );
 }
